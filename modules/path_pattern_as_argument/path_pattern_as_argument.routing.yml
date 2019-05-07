@@ -1,0 +1,11 @@
+
+path_pattern_as_argument.settings_form:
+  path: '/admin/structure/views/path_pattern_argument'
+  defaults:
+    _form: '\Drupal\path_pattern_as_argument\Form\SettingsForm'
+    _title: 'SettingsForm'
+  requirements:
+    _permission: 'administer views'
+  options:
+    _admin_route: TRUE
+

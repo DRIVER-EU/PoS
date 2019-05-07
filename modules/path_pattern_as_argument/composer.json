@@ -1,0 +1,14 @@
+{
+  "name": "drupal/path_pattern_for_contextual_filt",
+  "type": "drupal-module",
+  "description": "Allows to generate a pattern from the current path and use it as argument for a view",
+  "keywords": ["Drupal"],
+  "license": "GPL-2.0+",
+  "homepage": "https://www.drupal.org/project/path_pattern_for_contextual_filt",
+  "minimum-stability": "dev",
+  "support": {
+    "issues": "https://www.drupal.org/project/issues/path_pattern_for_contextual_filt",
+    "source": "http://cgit.drupalcode.org/path_pattern_for_contextual_filt"
+  },
+  "require": { }
+}

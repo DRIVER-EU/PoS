@@ -1,0 +1,7 @@
+name: Add contextual filter to Entity Browser
+type: module
+description: 'enables the capability to use views use default value if contextual filter is missing in entity browsers.'
+package: custom
+core: 8.x
+dependencies:
+  - entity_browser:entity_browser

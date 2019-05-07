@@ -1,0 +1,138 @@
+<?php
+
+/**
+ * @file
+ * Contains path_pattern_as_argument.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\views\ViewExecutable;
+use Drupal\Core\Url;
+/**
+ * Implements hook_help().
+ */
+function path_pattern_as_argument_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the path_pattern_for_contextual_filt module.
+    case 'help.page.path_pattern_as_argument':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('This module was created to make path contextual views possible. E.g. for a contextual help block. For configuration please go to the <a href="/admin/structure/views/">views overview page</a> and select the "Path pattern as argument"-tab.)') . '<br> </p><ol>';
+      $output .= '<li>' . t('Enter the id of the view you want to be path contextual') . '</li>';
+      $output .= '<li>' . t('specify which argument (contextual filter) of the view will be the target of the pattern. If your view has three contextual filters defined enter 0 for the first filter 1 for the second and so on.') . '</li>';
+      $output .= '<li>' . t('In the "replace patterns" field: Enter here search regexp replacement pairs. The regexp search pattern has to be separated from the replacement by the "|". One pair per line<br>E.g. the line <pre>/\/node\/([0-9]+)/|/node/*</pre> will create the "/node/*"-pattern for all node/nid paths.') . '</li>';
+      $output .= '<li>' . t('In the "append pattern"-field you can specify text which has to be appended to a pattern already created in point 3. make pattern|appendix pairs you can use tokens for the appendix. One pair per line. E.g. <pre>/node/*|[node:content-type:machine-name]</pre> will append the machine name of the nodes content type to the pattern node/* ') . '</li><ol>';
+     
+      return $output;
+
+    default:
+  }
+}
+
+  
+
+function path_pattern_as_argument_views_pre_view(ViewExecutable $view, $display_id, array &$args) {
+  // Get everythin we need
+  $config = \Drupal::config('path_pattern_as_argument.settings');
+  $current_url = Url::fromRoute('<current>')->toString();
+  $views = $config->get('views');
+
+  foreach($views as $entry) {
+    if ($view->id() == $entry['view'] && $display_id == $entry['display'] ) {
+      // The view and its Display have a setting
+      // get the replacement patterns and replace
+      $replacements = $entry['replace_patterns'];
+      $pattern = trim(_path_pattern_as_argument_replace($current_url,$replacements));
+       
+      if(strlen($entry['append_patterns']) > 3) {
+        // If we have Append patterns try to append them
+        $pattern = trim(_path_pattern_as_argument_append($pattern, $entry['append_patterns']));
+      }
+      
+      // replace existing arg.
+      $filter = $entry['position'];
+      $args[$filter] = $pattern;
+    }
+  }
+}
+
+
+function _path_pattern_as_argument_replace($string, $patterns) {
+  // Separate single Pattern Pairs
+  $config_patterns = explode("\n",$patterns);
+  $count = 0;
+  foreach($config_patterns as $pattern) {
+    // try to replace
+    $parts = explode('|', $pattern);
+    $string = preg_replace(trim($parts[0]),trim($parts[1]),$string,-1,$count);
+    if($count > 0){
+      // If we have a replacement we do not need to go throug the other patterns
+      break;
+    }
+  }
+  
+  return $string;
+}
+
+function _path_pattern_as_argument_append($string, $append_patterns){
+  // separeate single patterns 
+  $config_patterns = explode("\n",$append_patterns);
+  $count = 0;
+  
+  foreach($config_patterns as $pattern) {
+    // Replace
+    $parts = explode('|', $pattern);
+    if(trim($parts[0]) == $string) {
+      $string = $string . _path_pattern_as_argument_replace_tokens(trim($parts[1]));
+      break;
+    }
+  }
+
+  return $string;
+}
+
+function _path_pattern_as_argument_replace_tokens($string) {
+
+ if (!\Drupal::moduleHandler()->moduleExists('token')) {
+   return $string;
+ }
+  // Get the current route and its parameters and run tokens against the page entity
+  $current_route = \Drupal::routeMatch();
+
+  // get all entity types
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $types = $entity_type_manager->getDefinitions();
+  
+  $page_entity = NULL;
+  foreach ($current_route->getParameters()->keys() as $param_key) {
+    // loop through the route parameters
+    if (!isset($types[$param_key])) {
+      // go to the next parameter if it is no entity
+      continue;
+    }
+    if ($param = $current_route->getParameter($param_key)) {
+      if ($param instanceof \Drupal\Core\Entity\EntityInterface) {
+        // If the param is of type EntityInterface set $page_entity to it
+        $page_entity = $param; 
+      }
+
+      if (is_string($param) || is_numeric($param)) {
+        // Sometimes the entity route parameter is not expanded to theEntity but only its id
+        // So try to load it
+        try {
+          $page_entity = $entity_type_manager->getStorage($param_key)->load($param);
+        }
+        catch (\Exception $e) {
+        }
+      }
+  
+      if($page_entity) {
+        // If we have a page entity use it to replace possible tokens
+        return \Drupal::token()->replace($string, array("$param_key" => $page_entity ));
+      }
+
+    }
+  }
+  // If we do not gat a page entity return the String (with unreplaced tokens)
+  return $string;
+}

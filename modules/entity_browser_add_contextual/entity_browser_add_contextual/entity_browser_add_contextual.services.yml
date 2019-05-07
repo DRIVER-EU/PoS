@@ -1,0 +1,5 @@
+services:
+  entity_browser_add_contextual:
+    class: '\Drupal\entity_browser_add_contextual\EventSubscriber\AddContextualFilter'
+    tags:
+      - { name: 'event_subscriber' }

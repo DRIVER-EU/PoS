@@ -1,0 +1,4 @@
+path_pattern_as_argument.admin: 
+  route_name: path_pattern_as_argument.settings_form  
+  title: 'Path patterns as argument'
+  base_route: entity.view.collection

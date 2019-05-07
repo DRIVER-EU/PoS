@@ -1,0 +1,7 @@
+path_pattern_as_argument.settings_form:
+  title: 'Path patterns for contextual filters'
+  route_name: path_pattern_as_argument.settings_form
+  description: 'path paterns as argument'
+  parent: system.admin_config_system
+  weight: 99
+

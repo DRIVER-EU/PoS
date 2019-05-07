@@ -1,0 +1,9 @@
+name: 'path pattern as argument'
+type: module
+description: 'Allows to generate a pattern from the current path and use it as argument for a view'
+core: 8.x
+package: 'saw'
+configure: path_pattern_as_argument.settings_form
+dependencies:
+  - views
+  - token
