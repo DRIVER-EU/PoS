@@ -1,0 +1,19 @@
+name: PoS Group notifications
+description: 'Allows send notifications to group members.'
+core: 8.x
+package: Custom
+
+type: module
+core: 8.x
+version: '8.x-1.0'
+project: 'pos_group_notifications'
+configure: pos_group_notifications.admin_settings
+
+dependencies:
+  - drupal:views
+  - drupal:filter
+  - drupal:user
+  - drupal:system
+  - drupal:history
+  - ultimate_cron:ultimate_cron  
+  

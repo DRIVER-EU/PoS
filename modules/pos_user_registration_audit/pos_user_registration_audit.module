@@ -1,0 +1,114 @@
+<?php
+ 
+ /**
+ * pos_user_registration_audit module
+ *
+ */
+ 
+use Drupal\user\Entity\User;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+
+function pos_user_registration_audit_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.pos_user_registration_audit':
+      return t("
+        <h2>PoS user registration module</h2>
+        <p>This module has been created to store the Uid of the user that enable an user account in the PoS site.</p>
+    ");
+    break;
+  }
+}
+
+function pos_user_registration_audit_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+	
+	//drupal_set_message("form_id =".$form_id."<----", 'error');
+	
+	if (('user_form' == $form_id) || ('user_register_form' == $form_id)) {
+		//drupal_set_message("Dins<----", 'error');
+		
+		//add a hidden field to be able to check if user has been active
+
+			$entity = $form_state->getFormObject()->getEntity();	
+			
+			$field_status_previous_value = 0;
+			
+			if (('user_register_form' == $form_id)) {
+				$field_status_previous_value = 0;
+			}
+			else {
+				$field_status_previous_value = $entity->status[0]->value;
+			}
+			
+			
+			//drupal_set_message("field_publish_previous_value=".$field_publish_previous_value, 'error');
+			
+			//field used to know if the field field_publish change from 0 to 1
+	 		$form['pos_field_status_previous_value'] = [
+				'#type'          => 'hidden',
+				//'#type'          => 'textfield',
+				'#title'         => 'pos_field_status_previous_value',
+				'#default_value' =>  $field_status_previous_value,
+			];
+			
+
+								
+			// Add a custom submit handler .
+			$form['actions']['submit']['#submit'][] = 'pos_user_registration_audit_registration_form_submit';
+			
+		}
+
+
+}
+
+
+function pos_user_registration_audit_registration_form_submit(array $form, FormStateInterface $form_state) {
+
+	//drupal_set_message("IN pos_user_registration_audit_registration_form_submit!!!", 'error');
+	
+	//we must check if we need to store the uid that validate the user account.
+	// if status has been updated from 0 to 1 we must set the uid in the field field_account_enabled_by
+
+	//recover data field status
+	$field_status = "";	
+	$field_status = $form_state->getValue('status');
+	$field_status = $field_status[0]['value'];
+	//drupal_set_message("field_status->".$field_status."<---", 'error');
+	
+	//recover data field id
+	$field_uid = "";	
+	$field_uid = $form_state->getValue('uid');
+	//$field_uid = $field_uid[0]['value'];
+	//drupal_set_message("field_uid->".$field_uid."<---", 'error');
+
+	
+	//recover preivious status
+    $pos_field_publish_previous_status = $form_state->getValue('pos_field_status_previous_value');
+	
+	//drupal_set_message("pos_field_publish_previous_status->".$pos_field_publish_previous_status."<---", 'error');
+
+	$currentUserId = \Drupal::currentUser()->id();
+	//drupal_set_message("currentUserId->".$currentUserId."<---", 'error');
+	
+	if ($pos_field_publish_previous_status==0) {
+		//previous status was blocked
+		if ($field_status==1) {
+			//new status is active
+			//we need to publish the user id of current user in the field field_account_enabled_by
+			
+			//recover user data by id
+
+			$user = \Drupal\user\Entity\User::load($field_uid);		
+			// Set the field value new value.
+			$user->set('field_account_enabled_by', $currentUserId);
+			// Save the $user object, else changes won't persist.
+			$user->save();
+
+		}	
+	}
+	
+	
+	//drupal_set_message("OUT pos_user_registration_audit_registration_form_submit!!!", 'error');
+	
+}
+

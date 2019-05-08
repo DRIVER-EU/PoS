@@ -1,0 +1,84 @@
+pos_group_notifications_testing_mode: 1
+pos_group_notifications_last_reminder_execution: '2019-01-31'
+pos_group_notifications_primary_email: 'miquel.mila@atos.net'
+pos_group_notifications_subject_message: 'Report for [site:name]. Changed since [last_cron_run]'
+pos_group_notifications_body_message: |+ 
+  Dear [user:display-name],
+  
+  Following content in "your" groups on [site:name] has been added or updated since [last_cron_run]:
+
+  [dynamic_content_per_user] 
+
+  [site:name] team.
+  "your" groups are those Solution or Truial groups on [site:name] that you are member of.
+pos_group_notifications_subject_message_big_update: 'Report for [site:name]. All unread changes in your group'
+pos_group_notifications_body_message_big_update: |+ 
+  Dear [user:display-name],
+  
+  This is a monthly reminder for new and updated content in "your" Trials and Solutions on [site:name] that you haven't seen yet.
+  
+  [dynamic_content_per_user] 
+
+  [site:name] team.
+pos_group_notifications_request_publication_role_to_notify: 'quality_assurance'
+pos_group_notifications_request_publication_subject: 'Request publication for [site:name]'
+pos_group_notifications_request_publication_body: |+ 
+  Dear [user:display-name],
+  
+  [editor:name] has requested the publication of the group [group:name]. 
+
+  [site:name] team.
+pos_group_notifications_qa_not_empty_role_to_notify: 'administrator'
+pos_group_notifications_qa_not_empty_subject: '[site:name] QA is not empty'
+pos_group_notifications_qa_not_empty_body: |+ 
+  Dear [user:display-name],
+  
+  There is content pending to be evaluated in [qa:url].
+
+  [site:name] team.
+pos_group_notifications_reminder_solution_trial_not_publised_subject: '[site:name] contribution is not published'
+pos_group_notifications_reminder_solution_trial_not_publised_body: |+ 
+  Dear [user:display-name],
+  
+  Your solution/trial ([item:url]) isn't published yet.
+  Reason
+    [reason] 
+
+  Please fix the issue and request publishing (again)
+
+  [site:name] team.
+pos_group_notifications_reject_solution_trial_subject: '[site:name] content rejected'
+pos_group_notifications_reject_solution_trial_body: |+ 
+  Dear [user:display-name],
+  
+  Your solution/trial ([item:url]) has been rejected.
+  Reason
+    [reason]
+
+  When you are finished, please go back to [item:url] (edit mode), change the "QA comments" field to reflect what was done and request publication again.
+      
+  [site:name] team.
+pos_group_notifications_accept_solution_trial_subject: '[site:name] content accepted'
+pos_group_notifications_accept_solution_trial_body: |+ 
+  Dear [user:display-name],
+  
+  Your solution/trial ([item:url]) has been accepted.
+
+  [site:name] team.
+pos_group_notifications_feedback_published_enabled: 1
+pos_group_notifications_feedback_published_subject: '[site:name] feedback published'
+pos_group_notifications_feedback_published_body: |+ 
+  Dear [user:display-name],
+
+  Your feedback ([feedback:url]) has been published.
+
+  [site:name] team.
+pos_group_feedback_answer_is_given_enabled: 1
+pos_group_notifications_feedback_answered_subject: '[site:name] feedback answered'
+pos_group_notifications_feedback_answered_body: |+ 
+  Dear [user:display-name],
+  
+  An answer has been given to your feedback ([feedback:url]).
+
+  [site:name] team.   
+  

@@ -1,0 +1,7 @@
+pos_user_registration_audit.admin_settings:  
+  title: 'PoS admin audit user'
+  description: 'PoS admin audit user'
+  parent: system.admin_config
+  route_name: pos_user_registration_audit.admin_settings
+  weight: 101
+  

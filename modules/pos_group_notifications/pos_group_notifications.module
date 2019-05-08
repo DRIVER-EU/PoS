@@ -1,0 +1,1420 @@
+<?php
+ /* composer require "drupal/ultimate_cron:^2.0" */
+ /**
+ * pos_group_notifications module
+ *
+ */
+ 
+use \Drupal\user\Entity\User;
+use \Drupal\views\Views;
+use Drupal\node\Entity\Node;
+use Drupal\Component\Render\PlainTextOutput;
+use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\Core\Form\FormStateInterface;
+
+define('POS_HISTORY_READ_LIMIT', REQUEST_TIME - 30 * 24 * 60 * 60);
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+function pos_group_notifications_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.pos_group_notifications':
+      return t("
+        <h2>E-mail notification to the group members.</h2>
+        <h3>Help</h3>
+        <p>Copy this module in the custom *modules* folder of your site and enable it in '/admin/modules'.</p>
+
+        <p>After enable this module you can acces to the main configuration in admin/config/pos_group_notifications.</p>
+    ");
+    break;
+  }
+}
+
+function pos_group_notifications_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+	
+
+	//drupal_set_message("form_id =".$form_id."<----", 'error');
+	
+	if (('group_content_group_content_type_94199226bd05c_edit_form' == $form_id)) {
+				
+			$entity = $form_state->getFormObject()->getEntity();
+
+			$pos_field_approve_feedback_previous_status = $entity->field_approve_feedback[0]->value;
+			
+			//field used to know if the field field_qa_approved change from 0 to 1
+	 		$form['pos_field_approve_feedback_previous_status'] = [
+				'#type'          => 'hidden',
+				//'#type'          => 'textfield',
+				'#title'         => 'pos_field_approve_feedback_previous_status',
+				'#default_value' =>  $pos_field_approve_feedback_previous_status,
+			];
+
+			$pos_field_reply_previous_status = $entity->field_reply[0]->value;
+			
+			//field used to know if the field field_qa_approved change from 0 to 1
+	 		$form['pos_field_reply_previous_status'] = [
+				'#type'          => 'hidden',
+				//'#type'          => 'textfield',
+				'#title'         => 'pos_field_reply_previous_status',
+				'#default_value' =>  $pos_field_reply_previous_status,
+			];
+									
+			//field_reply
+			
+			$form['actions']['submit']['#submit'][] = 'pos_group_notifications_submit_feedback_group_form';
+	}
+	
+	else if (('group_solution_edit_form' == $form_id) || ('group_solution_add_form' == $form_id) 
+	||
+	('group_trial_edit_form' == $form_id) || ('group_trial_add_form' == $form_id)) {
+
+		//we check if the form has the field field_publish
+		if (array_key_exists('field_publish', $form)) {
+			//drupal_set_message("field_publish exists in the form", 'error');
+			
+			$field_publish_previous_value = $form_state->getValue('field_publish');
+			$entity = $form_state->getFormObject()->getEntity();			
+			$field_publish_previous_value = 0;
+			$field_publish_previous_value = $entity->field_publish[0]->value;
+			
+			//drupal_set_message("field_publish_previous_value=".$field_publish_previous_value, 'error');
+			
+			//field used to know if the field field_publish change from 0 to 1
+	 		$form['pos_field_publish_previous_status'] = [
+				'#type'          => 'hidden',
+				//'#type'          => 'textfield',
+				'#title'         => 'pos_field_publish_previous_status',
+				'#default_value' =>  $field_publish_previous_value,
+			];
+			
+			
+			
+			$field_qa_approved_previous_value = $form_state->getValue('field_qa_approved');
+			$entity = $form_state->getFormObject()->getEntity();			
+			$field_qa_approved_previous_value = 0;
+			$field_qa_approved_previous_value = $entity->field_qa_approved[0]->value;
+			
+			//field used to know if the field field_qa_approved change from 0 to 1
+	 		$form['pos_field_QA_approved_previous_status'] = [
+				'#type'          => 'hidden',
+				//'#type'          => 'textfield',
+				'#title'         => 'pos_field_qa_approved_previous_status',
+				'#default_value' =>  $field_qa_approved_previous_value,
+			];
+			
+			$field_qa_comments_previous_status = "";
+			$field_qa_comments_previous_status = $entity->field_qa_comments[0]->value;
+	 		$form['pos_field_qa_comments_previous_status'] = [
+				'#type'          => 'hidden',
+				//'#type'          => 'textfield',
+				'#title'         => 'pos_field_qa_comments_previous_status',
+				'#default_value' =>  $field_qa_comments_previous_status,
+			];
+								
+			// Add a custom submit handler to send email when Request publication (field field_publish) is checked to true.
+			$form['actions']['submit']['#submit'][] = 'pos_group_notifications_submit_group_form';
+			
+		}
+	}
+}
+
+/**
+* Implements hook_mail().
+*/
+
+use Drupal\Core\Mail\MailManagerInterface;
+use Drupal\Component\Utility\SafeMarkup;
+use Drupal\Component\Utility\Html;
+
+
+/**
+ * Implements hook_mail_alter().
+ */
+ 
+function pos_group_notifications_mail_alter(&$message) {
+	//drupal_set_message('pos_group_notifications_mail_alter. message["id"]='.$message['id'].'----', 'error');
+	// only alter pos_group_notifications_pos_group_notifications_mailing_list forms
+	if (!empty($message['id']) && $message['id'] == 'pos_group_notifications_pos_group_notifications_mailing_list') {
+		// make it a bit neater to access fields
+	
+		
+		//sending html formatted email
+		$message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed; delsp=yes';
+		
+		
+    }
+  
+}
+
+
+function pos_group_notifications_mail($key, &$message, $params) {
+		
+	
+	$options = array(
+		'langcode' => $message['langcode'],
+	);
+
+	switch ($key) {
+		case 'pos_group_notifications_mailing_list':
+			//drupal_set_message("---pos_group_notifications_mail---".$params['context']['message'], 'error');
+			$message['from'] = \Drupal::config('system.site')->get('mail');
+	 		$message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed; delsp=yes';	 
+     		$message['subject'] = $params['context']['subject'];
+     		$message['body'][] = $params['context']['message'];
+			
+			//$message['body'][] = \Drupal::service('renderer')->render($params['context']['message']);
+			//$message['body'][] = render($params['context']['message']);
+			
+			//$message['message'][] = $params['context']['message'];
+						
+      		break;
+  		}
+	
+}
+
+
+function pos_send_custom_email($to, $subject_email, $body_email, $key) {
+	
+	if ($to) {
+		//checking if the user has enabled the checkbox to receive emails notifications,  we recover user data by user email
+		$userByEmailData = user_load_by_mail($to);
+		$name= $userByEmailData->getUsername();
+		$checkboxAcceptNotifications = 0;
+		//$checkboxAcceptNotifications = $userByEmailData->get('field_accept_group_noti_by_email')->value;	
+		$checkboxAcceptNotifications = $userByEmailData->get('field_accept_email_notifications')->value;
+	
+		if ($checkboxAcceptNotifications==1) {		
+					
+			$config =  \Drupal::config('pos_group_notifications.settings');  // get saved settings
+			$pos_group_notifications_testing_mode = $config->get('pos_group_notifications_testing_mode'); 
+			$pos_group_notifications_primary_email = $config->get('pos_group_notifications_primary_email');
+	
+			if ($pos_group_notifications_testing_mode==True) {
+				$to_email = $pos_group_notifications_primary_email;
+			}
+			else {
+				$to_email = $to;
+			}
+		
+			$mailManager = \Drupal::service('plugin.manager.mail');
+			$module = 'pos_group_notifications';
+			//$key = 'pos_group_notifications_request_publication'; // Replace with Your key
+		
+			//$langcode = \Drupal::currentUser()->getPreferredLangcode();
+			$langcode = 'en';
+		  	$send = true;
+		
+			$params['context']['message'] = $body_email;
+			$params['context']['subject'] = $subject_email;	
+		
+			//$params['options']['username'] = 'mimimi';
+			//$params['options']['title'] = t('Your wonderful title');
+			//$params['options']['footer'] = t('Your wonderful footer');
+								
+			//$result = $mailManager->mail($module, $key, $to_email, $langcode, $params, NULL, $send);
+			
+			//drupal_set_message("to:".$to_email, 'error');
+			//drupal_set_message("langcode:".$langcode, 'error');
+			//drupal_set_message("subject:".$subject_email, 'error');
+			//drupal_set_message("body:".$body_email, 'error');
+			
+			$errorREcoverInCath = "";
+			try {
+				/*
+				if ($key=='pos_group_notifications_mailing_list') {
+					$result = $mailManager->mail($module, $key, $to_email, $langcode, $params, NULL, $send);	
+				}
+				else {
+					$result = $mailManager->mail('system', 'mail', $to_email, $langcode, $params, NULL, $send);
+				}
+				*/
+				$result = $mailManager->mail('system', 'mail', $to_email, $langcode, $params, NULL, $send);
+				
+				//
+				//$result = $mailManager->mail($module, 'pos_group_notifications_mailing_list', $to_email, $langcode, $params, NULL, $send);
+				
+			
+				//drupal_set_message("after send email", 'error');
+			} catch (Exception $e) {
+		    	//echo 'Caught exception: ',  $e->getMessage(), "\n";
+				//drupal_set_message("after send email cath: ".$e->getMessage(), 'error');
+				$errorREcoverInCath = $e->getMessage();
+				$result['result'] = false;
+			}
+			//$mailManager->mail($module, $key, $to_email, 'en', $params, $reply = NULL, $send = TRUE);
+			
+			
+			if ($result['result'] != true) {
+										
+				$extra_text = '-key='.$key.'-</br>-Executed in testing mode:';
+				if ($pos_group_notifications_testing_mode==1) {
+					$extra_text .= " ON";
+				}
+				else {
+					$extra_text .= " OFF";
+				}
+				$extra_text .= "</br>";
+				$extra_text .= '</br>-To:'.$to_email." </br>-Subject:".$subject_email."</br>-Body:</br>".$body_email;
+									
+				$message = t('There was a problem sending the email notification to @email.', array('@email' => $to_email));
+				
+				if ($errorREcoverInCath!="") {
+					$message .= "</br>".$errorREcoverInCath;
+				}
+							
+				$message .= "</br>".$extra_text;
+				
+				$message = str_replace("\n", "</br>", $message);
+				
+				\Drupal::logger('pos_group_notifications')->error($message);
+		
+			}
+		
+		}
+	}
+}
+
+
+//function that checks if the request_publication email need to be sended, and send it
+function pos_group_notification_request_publication(array $form, FormStateInterface $form_state) {
+	//drupal_set_message("IN pos_group_notification_request_publication!!!", 'error');
+	
+    $pos_field_publish_previous_status = $form_state->getValue('pos_field_publish_previous_status');
+
+	if (array_key_exists('field_publish', $form)) {
+		$new_field_publish_value = $form_state->getValue('field_publish');		
+		$new_field_publish_value = $new_field_publish_value['value'];
+	}
+
+	if (array_key_exists('pos_field_publish_previous_status', $form)) {
+		$previous_field_publish_value = $form_state->getValue('pos_field_publish_previous_status');
+		//drupal_set_message("IN --previous_field_publish_value:".$previous_field_publish_value."<---", 'error');
+		//$previous_field_publish_value = $previous_field_publish_value['value'];		
+	}
+	else {
+		$previous_field_publish_value = $new_field_publish_value;
+	}
+
+    //drupal_set_message("-previous_field_publish_value value ->".$previous_field_publish_value."<---", 'error');
+	//drupal_set_message("-new_field_publish_value value ->".$new_field_publish_value."<---", 'error');
+
+	//send an email if:
+	// * after update a group and field_publish change from 0 to 1
+	
+	$entity = $form_state->getFormObject()->getEntity();
+	
+	$sendEmail = False;
+	if (($previous_field_publish_value==0) && ($new_field_publish_value==1)) {
+		$sendEmail = True;
+	}
+	
+	//$sendEmail = True;
+	
+	//drupal_set_message("-change condition to send email<---", 'error');
+	if ($sendEmail==True) {
+		//drupal_set_message("-sending email true<---", 'error');
+		
+		$config =  \Drupal::config('pos_group_notifications.settings');
+		$pos_group_notifications_request_publication_subject = $config->get('pos_group_notifications_request_publication_subject');
+		$pos_group_notifications_request_publication_body = $config->get('pos_group_notifications_request_publication_body');
+
+		global $base_url;
+		$host = $base_url;
+
+		// access to the main site data
+		$system_site_config = \Drupal::config('system.site');
+ 		$site_email = $system_site_config->get('mail');
+		$site_name = $system_site_config->get('name');
+		
+		$subject_email = str_replace("[site:name]", $site_name, $pos_group_notifications_request_publication_subject);
+
+		$current_uid = \Drupal::currentUser()->id();
+		 		
+		$current_user = User::load($current_uid);
+		
+		$current_user_name = $current_user->get('field_real_name')->value;
+				
+		$gid = $entity->id[0]->value;
+		$group = Drupal\group\Entity\Group::load($gid);	
+				
+		$group_name = $form_state->getValue('label');
+		$group_name = $group_name[0]['value'];
+		
+		$group_name ="<a href='".$host."/group/".$gid."'>".$group_name."</a>";
+		
+		//The list of members to notify are the ones that belong to the uid configured in pos_group_notifications_request_publication_role_to_notify
+		//$group_members = $group->getMembers();
+		//
+		$pos_group_notifications_request_publication_role_to_notify = $config->get('pos_group_notifications_request_publication_role_to_notify');
+		//drupal_set_message("-gid-->".$pos_group_notifications_request_publication_role_to_notify."<---", 'error');
+		$group_members = pos_group_notifications_get_list_of_members_by_role_name($pos_group_notifications_request_publication_role_to_notify);
+
+		$key = 'pos_group_notifications_request_publication';
+
+		foreach ($group_members as $user) {
+    		//$user = $member->getUser();
+			
+			$uid = $user->get('uid')->value;
+    		$realname = $user->get('field_real_name')->value;
+			$mail = $user->get('mail')->value;
+			
+			//drupal_set_message("--uid-->".$uid."<---realname-->".$realname."<---", 'error');
+    				
+			//$usersToSenNotification[] = array("uid"=>$uid, "mail"=> $mail, "realname" => $realname );
+			
+			//$body_email = "send an email to--uid-->".$uid."<---realname-->".$realname."<---email-->".$mail."<---";
+			$body_email = $pos_group_notifications_request_publication_body;
+			
+			$body_email = str_replace("[user:display-name]", $realname, $body_email);
+			$body_email = str_replace("[site:name]", $site_name, $body_email);
+			$body_email = str_replace("[editor:name]", $current_user_name, $body_email);
+			
+			$body_email = str_replace("[group:name]", $group_name, $body_email);
+			//$body_email= str_replace("\n", "</br>", $body_email);
+			
+			$body_email  = html_entity_decode( $body_email);
+			$body_email = render($body_email);
+			
+			//drupal_set_message("send an email to--uid-->".$uid."<---realname-->".$realname."<---email-->".$mail."<---", 'error');
+			//I'm not to send an email to me
+			//if ($current_uid!=$uid) {
+				//drupal_set_message("send an email to--uid-->".$uid."<---realname-->".$realname."<---email-->".$mail."<---", 'error');
+				pos_send_custom_email($mail, $subject_email, $body_email, $key);	
+			//}
+					
+        }
+	}
+	//else {
+	//	drupal_set_message("-sending email false<---", 'error');
+	//}
+	
+	//drupal_set_message("Out pos_group_notification_request_publication!!!", 'error');
+	return true;	
+}
+
+//function that checks if the reject or the accept email needs to be sended, and send it
+function pos_group_notification_accept_reject(array $form, FormStateInterface $form_state) {
+	//drupal_set_message("IN pos_group_notification_accept_reject!!!", 'error');
+	
+	//Reject is when an editor (user with the administration role) save a trial/solution with the field 'QA approved?' unchecked and the QA comments text changes.    
+	
+	//check if the current user is an editor (administrator)
+	$isCurrentUserAnAdmin = \Drupal\user\Entity\User::load(\Drupal::currentUser()->id())->hasRole('administrator');
+	if ($isCurrentUserAnAdmin) {
+		//recover data frils qa_approved
+		$field_qa_approved = 0;		
+		if (array_key_exists('field_qa_approved', $form)) {
+			$field_qa_approved = $form_state->getValue('field_qa_approved');		
+			$field_qa_approved = $field_qa_approved['value'];
+		}
+		
+		//drupal_set_message("--field_qa_approved:".$field_qa_approved, 'error');
+		
+		//recover data field qa_comments
+		$field_qa_comments = "";
+		if (array_key_exists('field_qa_comments', $form)) {
+			$field_qa_comments = $form_state->getValue('field_qa_comments');
+			$field_qa_comments = $field_qa_comments[0]['value'];
+		}
+		
+		//recover preivious qa comments status
+    	$pos_field_publish_previous_status = $form_state->getValue('pos_field_publish_previous_status');
+		$pos_field_qa_comments_previous_status = $form_state->getValue('pos_field_qa_comments_previous_status');
+			
+		//if $field_qa_approved == 0 -> reject
+		//if $field_qa_approved == 1 -> accept
+		$action = "";
+		$sendEmail = false;
+		$reason = ""; 
+		//check status of the field	field_qa_approved
+		if ($field_qa_approved == 0) {
+			$action = "reject";
+			//if user rejects only send email if field field_qa_comments has been updated			
+			//drupal_set_message("IN comments:".$field_qa_comments, 'error');
+			//drupal_set_message("IN previous comments:".$pos_field_qa_comments_previous_status, 'error');
+			if ($field_qa_comments!=$pos_field_qa_comments_previous_status) {
+				$reason = $field_qa_comments;
+				$sendEmail = true;
+			}		
+		}
+		else if ($field_qa_approved == 1) {
+			//mmp
+			//only send an email if field_QA_approved change from 0 to 1. We can check this chenkiong the value of pos_field_QA_approved_previous_status
+			$pos_field_QA_approved_previous_status = $form_state->getValue('pos_field_QA_approved_previous_status');
+			
+			//drupal_set_message("pos_field_QA_approved_previous_status:".$pos_field_QA_approved_previous_status, 'error');
+			
+			if ($pos_field_QA_approved_previous_status!=$field_qa_approved) {
+				$action = "accept";
+				$sendEmail = true;
+			}
+		}
+		
+		//$sendEmail = true;
+		if ($sendEmail) {
+			//drupal_set_message("send email", 'error');
+			//the group owner/team must receive an e-mail.
+			//$group = \Drupal\group\Entity\Group::load(65);
+			$group = $form_state->getFormObject()->getEntity();
+		
+			$gid = $group->id[0]->value;
+			$glabel = $group->label[0]->value;
+			
+			//drupal_set_message("--gid:".$gid, 'error');
+			//drupal_set_message("--glabel:".$glabel, 'error');
+			
+			$key = 'pos_trial_solution_accepted_rejected';
+			
+			$subject_email = "";
+			$config =  \Drupal::config('pos_group_notifications.settings');  // get saved settings
+			
+			if ($action == "accept") {
+				$subject_email = $config->get('pos_group_notifications_accept_solution_trial_subject');
+			}
+			else if ($action == "reject") {
+				$subject_email = $config->get('pos_group_notifications_reject_solution_trial_subject');
+			}
+			
+			// access to the main site data
+			$system_site_config = \Drupal::config('system.site');
+			$site_name = $system_site_config->get('name');
+			
+			$subject_email = str_replace("[site:name]", $site_name, $subject_email);
+			$subject_email = PlainTextOutput::renderFromHtml($subject_email);
+			
+			global $base_url;
+			$host = $base_url;
+			
+			$members = $group->getMembers();
+			foreach ($members as $member) {
+				$user = $member->getUser();
+				$uid = $user->get('uid')->value;
+    			$realname = $user->get('field_real_name')->value;
+				$mail = $user->get('mail')->value;
+
+				$body_email = "";
+				if ($action == "accept") {
+					$body_email = $config->get('pos_group_notifications_accept_solution_trial_body');
+				}
+				else if ($action == "reject") {
+					$body_email = $config->get('pos_group_notifications_reject_solution_trial_body');
+				}
+						
+				$body_email = str_replace("[user:display-name]", $realname, $body_email);
+				$body_email = str_replace("[site:name]", $site_name, $body_email);
+
+				$group_name ="<a href='".$host."/group/".$gid."'>".$glabel."</a>";				
+				$body_email = str_replace("[item:url]", $group_name, $body_email);
+				
+				$body_email = str_replace("[reason]", $reason, $body_email);
+
+				//$body_email= str_replace("\n", "</br>", $body_email);
+
+				$body_email  = html_entity_decode( $body_email);
+				$body_email = render($body_email);			
+				//drupal_set_message("send an email to:".$mail, 'error');
+				pos_send_custom_email($mail, $subject_email, $body_email, $key);
+											
+			}
+		}
+		else {
+			//we don't send emails
+			//drupal_set_message("NO EMAIL!!", 'error');
+		}
+		
+	}
+
+		
+	//drupal_set_message("Out pos_group_notification_accept_reject!!!", 'error');
+	return true;	
+}
+
+
+function pos_group_notifications_submit_feedback_group_form(array $form, FormStateInterface $form_state) {
+	
+	//drupal_set_message("IN pos_group_notifications_submit_feedback_group_form!!!", 'error');
+
+	//approve data
+	$field_approve_feedback = $form_state->getValue('field_approve_feedback');		
+	$field_approve_feedback = $field_approve_feedback['value'];
+	
+	$pos_field_approve_feedback_previous_status = $form_state->getValue('pos_field_approve_feedback_previous_status');		
+	//$pos_field_approve_feedback_previous_status = $pos_field_approve_feedback_previous_status['value'];
+	
+	//drupal_set_message("field_approve_feedback:".$field_approve_feedback, 'error');
+	//drupal_set_message("pos_field_approve_feedback_previous_status:".$pos_field_approve_feedback_previous_status, 'error');
+	
+	//reply data
+	$field_reply = $form_state->getValue('field_reply');		
+	$field_reply = $field_reply[0]['value'];
+	$field_reply = trim($field_reply);
+		
+	$pos_field_reply_previous_status = $form_state->getValue('pos_field_reply_previous_status');
+	$pos_field_reply_previous_status = trim($pos_field_reply_previous_status);
+	
+	//drupal_set_message("field_reply--->".$field_reply."<---", 'error');
+	//drupal_set_message("pos_field_reply_previous_status-->".$pos_field_reply_previous_status."<----", 'error');
+	
+	$entity = $form_state->getFormObject()->getEntity();
+	$entity_id = $entity->id[0]->value;
+	$author_id = $entity->uid[0]->target_id;	
+	$entity_gid = $entity->gid[0]->target_id;
+	//drupal_set_message("entity_id=".$entity_id, 'error');
+	//drupal_set_message("author_id=".$author_id, 'error');
+	//drupal_set_message("entity_gid=".$entity_gid, 'error');
+	
+
+	//$field_reply = $form_state->getValue('field_reply');
+	//$field_reply = $entity->field_reply[0]->value;
+	/*
+	foreach ($entity as $k=>$v) {
+		drupal_set_message("entity - k=".$k."<-----", 'error');
+	}
+	*/
+	//$field_reply = $field_reply['value'];
+	
+	$sendEmail = False;
+	$sendEmailAproved = False;
+	$sendEmailReply = False;
+	
+	//field_approve_feedback = 1 and pos_field_approve_feedback_previous_status = 0 this means that the user approved the content  
+	if (($field_approve_feedback==1) && ($pos_field_approve_feedback_previous_status==0)) {
+		//drupal_set_message("An mail to the owner is needed to inform him that the feedback has been aproved", 'error');
+		$sendEmail = True;
+		$sendEmailAproved = True;
+	}
+	if ($field_reply!=$pos_field_reply_previous_status) {
+		//drupal_set_message("An mail to the owner is needed to inform him that an answer is given", 'error');
+		$sendEmail = True;
+		$sendEmailReply = True;
+	}
+		
+	if ($sendEmail) {
+			
+		$config =  \Drupal::config('pos_group_notifications.settings');
+		$pos_group_notifications_request_publication_subject = $config->get('pos_group_notifications_request_publication_subject');
+		$pos_group_notifications_request_publication_body = $config->get('pos_group_notifications_request_publication_body');		
+		$pos_group_notifications_feedback_published_enabled = $config->get('pos_group_notifications_feedback_published_enabled');
+		$pos_group_feedback_answer_is_given_enabled = $config->get('pos_group_feedback_answer_is_given_enabled');
+		
+		global $base_url;
+		$host = $base_url;
+
+		// access to the main site data
+		$system_site_config = \Drupal::config('system.site');
+ 		$site_email = $system_site_config->get('mail');
+		$site_name = $system_site_config->get('name');
+
+		$author_user = User::load($author_id);
+				
+		$uid = $author_user->get('uid')->value;
+    	$realname = $author_user->get('field_real_name')->value;
+		$mail = $author_user->get('mail')->value;
+			
+		if ($sendEmailAproved) {
+			
+			if ($pos_group_notifications_feedback_published_enabled==1) {
+				$key = 'pos_group_notifications_feedback_published';
+				
+				$pos_group_notifications_feedback_published_subject = $config->get('pos_group_notifications_feedback_published_subject');	
+				$subject_email = str_replace("[site:name]", $site_name, $pos_group_notifications_feedback_published_subject);
+				
+				$pos_group_notifications_feedback_published_body = $config->get('pos_group_notifications_feedback_published_body');
+				$body_email = $pos_group_notifications_feedback_published_body;		
+				$body_email = str_replace("[user:display-name]", $realname, $body_email);
+				$body_email = str_replace("[site:name]", $site_name, $body_email);
+				$body_email = str_replace("[feedback:url]", '<a href="'.$host.'/PoS/solution/'.$entity_gid.'/content/'.$entity_id.'">'.$host.'/PoS/solution/'.$entity_gid.'/content/'.$entity_id.'</a>', $body_email);			
+				
+				pos_send_custom_email($mail, $subject_email, $body_email, $key);
+			}
+		}
+		
+		if ($sendEmailReply) {
+			
+			if ($pos_group_feedback_answer_is_given_enabled==1) {
+				$key = 'pos_group_notifications_feedback_answered';
+	
+				$pos_group_notifications_feedback_answered_subject = $config->get('pos_group_notifications_feedback_answered_subject');	
+				$subject_email = str_replace("[site:name]", $site_name, $pos_group_notifications_feedback_answered_subject);
+				
+				$pos_group_notifications_feedback_answered_body = $config->get('pos_group_notifications_feedback_answered_body');
+				$body_email = $pos_group_notifications_feedback_answered_body;		
+				$body_email = str_replace("[user:display-name]", $realname, $body_email);
+				$body_email = str_replace("[site:name]", $site_name, $body_email);
+				$body_email = str_replace("[feedback:url]", '<a href="'.$host.'/PoS/solution/'.$entity_gid.'/content/'.$entity_id.'">'.$host.'/PoS/solution/'.$entity_gid.'/content/'.$entity_id.'</a>', $body_email);
+				
+				pos_send_custom_email($mail, $subject_email, $body_email, $key);
+			}
+		}
+		
+	}
+		
+	//drupal_set_message("OUT pos_group_notifications_submit_feedback_group_form!!!", 'error');
+}
+
+function pos_group_notifications_submit_group_form(array $form, FormStateInterface $form_state) {
+
+	//drupal_set_message("IN pos_group_notifications_submit_group_form!!!", 'error');
+	
+	//we must check if we need to send one of this e-mails.
+	// * request_publication: When group owner/team member sets the "Request publication", the site editor(s) should receive an e-mail
+	// * or reject or accept trial/solution
+	//		- reject item: Reject is when an editor (user with the administration role) save a trial/solution with the field 'QA approved?' unchecked and the QA comments text changes.
+	//      - accept item: When editor checks the field QA approved?
+	
+	//function that checks if the request_publication email need to be sended, and send it
+	$result = pos_group_notification_request_publication($form, $form_state);
+	
+	//function that checks if the reject or the accept email needs to be sended, and send it
+	$result = pos_group_notification_accept_reject($form, $form_state);
+	
+	//drupal_set_message("OUT pos_group_notifications_submit_group_form!!!", 'error');
+	
+}
+
+function pos_getGroupContentByGID_and_uid($idin, $uid, $executionType) {
+		
+	//drupal_set_message("pos_getGroupContentByGID_and_uid idin=".$idin."---uid=".$uid."<----executionType-->".$executionType."<----", 'error');
+	
+	//change tu current user account to access correctly to the view to recover the timestamp that tell us the last time the user access to the node	
+	$accountSwitcher = \Drupal::service('account_switcher');
+    $account = \Drupal\user\Entity\User::load($uid);
+	$accountSwitcher->switchTo($account);
+	
+	$account = \Drupal::currentUser();
+	
+	/*	
+  	if ($account->id() == 1) {
+		drupal_set_message("***----".rand(1, 150)."---Hiya, boss!", 'error');
+  	}
+  	else {
+  		drupal_set_message("***----".rand(1, 150)."---You are not the site administrator.", 'error');
+  	}	
+	drupal_set_message("________---->".$account->id()."<----", 'error');
+	*/
+	
+	//recover data from the view
+	//$view = Views::getView('group_nodes');
+	$view = Views::getView('pos_notification_group_nodes');
+	
+	//recover the timestamp of the last crun run	
+	$config =  \Drupal::config('pos_group_notifications.settings');  // get saved settings
+	
+	if ($executionType=='reminder') {
+		
+		$pos_group_notifications_last_run = new DrupalDateTime( $config->get('pos_group_notifications_last_reminder_execution'));
+	}
+	else {
+		$pos_group_notifications_last_run = $config->get('pos_group_notifications_last_run');	
+	}
+	
+	
+	//if there is data in pos_group_notifications_last_run we inform the filter changed date
+	if ($pos_group_notifications_last_run) {
+		
+		//drupal_set_message(rand(1, 150)."---dins!!!--pos_group_notifications_last_run=".$pos_group_notifications_last_run, 'error');
+		$dtime = DateTime::createFromFormat('Y-m-d H:i:s e', $pos_group_notifications_last_run);
+		$timestamp = $dtime->getTimestamp();
+		$timestamp_as_date = gmdate("Y-m-d H:i:s", $timestamp);
+		
+		$query = [
+		    'changed' => $timestamp_as_date,
+		
+		];
+		
+		$view->setExposedInput($query);
+		
+	}
+
+	$view->setDisplay('default');
+
+	//set the gid into the view arguments	
+	$view->setArguments([$idin]);
+
+	// Execute the view.
+	$view->execute();
+	
+	//get the returned rows
+	$rows = $view->total_rows;
+			
+	//return to the previous user account		  	
+	$accountSwitcher->switchBack();
+	
+	
+	$dataToReturn = array();
+		
+	foreach ($view->result as $row) {
+		//drupal_set_message(rand(1, 150)."---mmp row->nid:".$row->nid,"error");
+		//load node by nid    
+		$node = Node::load($row->nid);
+		
+		//get some data from node		
+		$nodeTitle = $node->get('title')->value;
+		$nodeCreated = $node->getCreatedTime();
+		$nodeChanged = $node->getChangedTime();
+      
+		//last node read is the date in the view as timestamp
+		$last_read = $nodeChanged;
+		$last_comment = $nodeChanged;
+		
+		$last_read = $view->field['timestamp']->getValue($row);
+		
+		$changed = $nodeChanged;
+		
+		//check if node has been readed from user acording timestamps		
+		$mark = "MARK_READ";
+		if (!$last_read && $changed > POS_HISTORY_READ_LIMIT) {
+        	$mark = "MARK_NEW";
+      	}
+		elseif ($nodeChanged > $last_read && $changed > POS_HISTORY_READ_LIMIT) {
+        	$mark = "MARK_UPDATED";
+      	}
+		/*
+      	elseif ($last_comment > $last_read && $last_comment > POS_HISTORY_READ_LIMIT) {
+        	$mark = "MARK_UPDATED";
+      	}
+		*/
+		
+		/*
+		//old version, it was before to use the view filter by changed date
+		$canAdd = False;		
+		if ($timestamp!="") {
+			if ($nodeChanged>=$timestamp) {
+				$canAdd = True;
+			}
+		}
+		else {
+			$canAdd = True;
+		}
+		*/
+		
+		//old version, it was before to use the view filter by changed date
+		//if (($canAdd==True) && ($mark!="MARK_READ")) {
+			
+		//only nodes that has not been readed fomr user will be added in th list of nodes	
+		if ($mark!="MARK_READ") {
+			
+			$dataToReturn[] = array("nid"=> $row->nid, "title"=> $nodeTitle, "mark"=>$mark);
+		}
+		
+	}
+	
+	
+	return $dataToReturn;	
+}
+
+
+
+function pos_getGroupsByUser($user, $executionType) {
+	
+	$dataToReturn = array();	
+	$dataToReturnByGroup = array();
+	$uid = $user->get('uid')->value;
+	$mail = $user->get('mail')->value;
+	$name = $user->get('name')->value;
+	$realname = $user->get('field_real_name')->value;
+	
+	$login = $user->get('login')->value;
+	$access = $user->get('access')->value;
+	
+	$data = 'uid:'.$uid.'---mail:'.$mail.'----realname:'.$realname.'----name:'.$name.'-----login:'.$login.'----last access:'.$access.'---';
+
+	$grp_membership_service = \Drupal::service('group.membership_loader');
+	$grps = $grp_membership_service->loadByUser($user);
+
+	foreach ($grps as $grp) {
+		$goupData = $grp->getGroup();		
+		//drupal_set_message($data."-------gid=".$goupData->id()."-------uuid=---".$goupData->uuid()."------label=---".$goupData->label()."----", 'error');
+		$dataByUser = pos_getGroupContentByGID_and_uid($goupData->id(), $uid, $executionType);
+		$dataToReturnByGroup[] = array("gid" => $goupData->id(), "glabel" => $goupData->label(), "gdata" => $dataByUser);
+
+
+     }	
+     
+	 if (sizeof($dataToReturnByGroup)>0){
+	 	$dataToReturn = array("uid"=>$uid, "mail"=> $mail, "realname" => $realname, "dataByGroup" => $dataToReturnByGroup );
+	 }
+     return $dataToReturn;
+}
+
+/**
+ * Implements hook_cron().
+ *
+ * We implement hook_cron() to do "background" processing. It gets called every
+ * time the Drupal cron runs. We then decide what has to happen in response.
+ *
+ */
+  
+function pos_group_notifications_cron() {
+	
+	//drupal_set_message("***----".rand(1, 150)."--pos_group_notifications_cron 1 A--", 'error');
+	pos_group_notifications_start_cron_tasks();
+	//drupal_set_message("***----".rand(1, 150)."--pos_group_notifications_cron 1 B--", 'error');
+	
+}
+
+function pos_group_notifications_start_cron_tasks() {
+	
+	//drupal_set_message("***----".rand(1, 150)."--hola 1--pos_group_notifications_start_cron_tasks", 'error');
+
+	//drupal_set_message('pos_group_notifications_cron', 'error');
+	
+	
+	//we must check if is necessary to send the reminder email or the periodicall email
+	//reminder email is on per month with th data publishec in that month
+	//periodical is te one executed in each cron task an just the latests documents published since the last execution
+	//the reminder will use onother subject and another email and will use the first day of the month as started point
+
+		//today is last day of the month?
+		//$today_date = strtotime(date('Y-m-d H:i:s'));		
+		
+		
+		$config = \Drupal::service('config.factory')->getEditable('pos_group_notifications.settings');
+		$today_date = date('Y-m-d');
+		//$today_date = date('Y-m-t');
+				
+		//drupal_set_message('today_date:'.$today_date, 'error');		
+		//$last_day_of_the_month = strtotime(date('Y-m-t 00:00:00'));
+		$last_day_of_the_month = date('Y-m-t');
+		//drupal_set_message('last_day_of_the_month:'.$last_day_of_the_month, 'error');
+		
+		$sendReminder = False;
+		//if (1==1) {
+		if ($last_day_of_the_month==$today_date) {
+			//we need to check if we send the reminder this month
+			//drupal_set_message('last_day_of_the_month = today_date we need to check if the reminder has been sended this month', 'error');
+			$pos_group_notifications_last_reminder_execution = $config->get('pos_group_notifications_last_reminder_execution');
+			
+			//drupal_set_message('pos_group_notifications_last_reminder_execution:'.$pos_group_notifications_last_reminder_execution, 'error');
+			
+			if ($pos_group_notifications_last_reminder_execution) {
+				
+				if ($pos_group_notifications_last_reminder_execution==$today_date) {
+					//the reminder has been sended this month, we don't need to send it again
+					//drupal_set_message("the reminder has been sended this month, we don't need to send it again", 'error');
+					$sendReminder = False;
+				}
+				else {
+					//we must send the reminder because the send date is different
+					//drupal_set_message('we must send the reminder because the send date is different', 'error');
+					$sendReminder = True;
+				}
+			}	
+			else {
+				//we never execute this reminder then we must do it
+				//drupal_set_message('we never execute this reminder then we must do it', 'error');
+				$sendReminder = True;
+			}
+		}
+		else {
+			//last_day_of_the_month != today_date reminder is not sended
+			//drupal_set_message('last_day_of_the_month != today_date reminder is not sended', 'error');
+			$sendReminder = False;
+		}
+		
+		//if (1==1) {
+		if ($sendReminder==True) {
+			//drupal_set_message('Sending REMINDER', 'error');
+			$first_day_of_the_month = date('Y-m-01');
+			
+			$result = pos_group_notifications_send_emails('reminder');
+			
+			$config->set('pos_group_notifications_last_reminder_execution', $today_date);
+			$config->save();		
+			
+		}
+		else {
+			//drupal_set_message('Sending normal email', 'error');
+			$result = pos_group_notifications_send_emails('periodical');
+		}
+		
+	
+	//drupal_set_message("***----".rand(1, 150)."--pos_group_notifications_cron 1 A--", 'error');
+	    
+	//drupal_set_message("***----".rand(1, 150)."--pos_group_notifications_cron 1 B--", 'error');
+	
+	//update last run date	
+	//$config = \Drupal::service('config.factory')->getEditable('pos_group_notifications.settings');	
+	$date = new DateTime();
+	$new_last_run_date = date('Y-m-d H:i:s e', $date->getTimestamp());
+	
+	$config->set('pos_group_notifications_last_run', $new_last_run_date);
+	$config->save();
+
+	try{
+		$last_weekly_notification = $config->get('pos_group_notifications_last_weekly_notification');
+	}		
+	catch (Exception $e) {    	
+		$last_weekly_notification = 0;
+	}
+	//$last_weekly_notification = 0;
+	//drupal_set_message("***----".rand(1, 150)."--last_weekly_notification--".$last_weekly_notification, 'error');
+
+	if ($last_weekly_notification <= strtotime('-1 week')) {
+        //drupal_set_message("***----".rand(1, 150)."--in if...->".strtotime('-1 week')."<----", 'error');
+		//drupal_set_message("***----".rand(1, 150)."--pos_group_notifications_cron 3 A--", 'error');
+		$result = pos_group_notifications_send_emails_solution_trial_not_published();	
+		//drupal_set_message("***----".rand(1, 150)."--pos_group_notifications_cron 3 B--", 'error');	  
+	  	$config->set('pos_group_notifications_last_weekly_notification', time());
+	  	$config->save();
+    }
+	
+	//drupal_set_message("***----".rand(1, 150)."--pos_group_notifications_cron 2 A--", 'error');
+	$result = pos_group_notifications_send_emails_qa_groups_not_empty();
+	//drupal_set_message("***----".rand(1, 150)."--pos_group_notifications_cron 2 B--", 'error');
+
+	//drupal_set_message("***----".rand(1, 150)."--hola 2--pos_group_notifications_start_cron_tasks", 'error');
+}
+
+
+
+
+function pos_group_notifications_get_list_of_members_by_role_name($role_name) {
+	
+	//drupal_set_message('pos_group_notifications_get_list_of_members_by_role_name. role_name='.$role_name.'----', 'error');
+	
+	$ids = \Drupal::entityQuery('user')
+	->condition('status', 1)
+	->condition('roles', $role_name)
+	->execute();
+	$users = User::loadMultiple($ids);
+	
+	return $users;
+}
+
+function pos_group_notifications_send_emails_qa_groups_not_empty() {
+	
+	/*
+	Requirement: Alternatively/in addition, teh site editors should receive occasional reminder if https://pos-dev.driver-project.eu/QA/groups isn't empty.
+	*/
+	//drupal_set_message('pos_group_notifications_send_emails_qa_groups_not_empty', 'error');
+	
+	$view = Views::getView('all_groups_qa_view');
+	$view->setDisplay('default');
+	// Execute the view.
+	$view->execute();
+	//get the returned rows
+	$rows = $view->total_rows;
+	//drupal_set_message('--rows='.$rows, 'error');
+	//if this view has contetn, we must send email to
+	if ($rows>0) {
+		
+		$config =  \Drupal::config('pos_group_notifications.settings');  // get saved settings		
+		$subject_email = $config->get('pos_group_notifications_qa_not_empty_subject');
+		
+		// access to the main site data
+		$system_site_config = \Drupal::config('system.site');
+		$site_name = $system_site_config->get('name');		
+		
+		$subject_email = str_replace("[site:name]", $site_name, $subject_email);
+		$subject_email = PlainTextOutput::renderFromHtml($subject_email);
+		
+		$body_email_notification_qa = $config->get('pos_group_notifications_qa_not_empty_body'); 
+		
+		global $base_url;
+		$host = $base_url;
+		
+		//$members_list = pos_group_notifications_get_list_of_members_by_role_name('Administrator');
+		
+		$pos_group_notifications_qa_not_empty_role_to_notify = $config->get('pos_group_notifications_qa_not_empty_role_to_notify'); 
+		
+		//$members_list = pos_group_notifications_get_list_of_members_by_role_name('Administrator');
+		$members_list = pos_group_notifications_get_list_of_members_by_role_name($pos_group_notifications_qa_not_empty_role_to_notify);
+				
+		//drupal_set_message('before foreach', 'error');
+		foreach ($members_list as $user) {
+			//drupal_set_message('in foreach', 'error');
+
+			$uid = $user->get('uid')->value;
+    		$realname = $user->get('field_real_name')->value;
+			$to_email = $user->get('mail')->value;
+			
+			$body_email = $body_email_notification_qa;
+			$body_email = str_replace("[user:display-name]", $realname, $body_email);
+			$body_email = str_replace("[site:name]", $site_name, $body_email);
+			
+			$body_email = str_replace("[qa:url]", '<a href="'.$host.'/QA/groups">'.$host.'/QA/groups</a>', $body_email);
+			
+			//$body_email = str_replace("\n", "</br>", $body_email);
+			
+			$key = 'pos_group_notifications_qa_not_empty'; // Replace with Your key
+			//drupal_set_message('--uid='.$uid.'----realname='.$realname.'----------mail='.$to_email.'-----', 'error');		
+			
+			pos_send_custom_email($to_email, $subject_email, $body_email, $key);
+			
+		}
+		//drupal_set_message('after foreach', 'error');
+	}
+	
+}
+
+
+function pos_group_notifications_send_emails($executionType) {
+	
+	//drupal_set_message('pos_group_notifications_send_emails. Type execution:'.$executionType."---", 'error');
+	//execute the function that recover the latest nodes and sends an email. 
+	//it recover the list of enabled users, recover their groups, and send an email per user with the latest nodes published in each group
+	//an email per user
+		
+	// We access our configuration to recover data.
+	$config =  \Drupal::config('pos_group_notifications.settings');  // get saved settings
+	$pos_group_notifications_testing_mode = $config->get('pos_group_notifications_testing_mode'); 
+	$pos_group_notifications_primary_email = $config->get('pos_group_notifications_primary_email');
+	
+	
+	if ($executionType=='reminder') {
+		$pos_group_notifications_subject_message = $config->get('pos_group_notifications_subject_message_big_update');
+		$pos_group_notifications_body_message = $config->get('pos_group_notifications_body_message_big_update');	
+		$pos_group_notifications_last_run = $config->get( 'pos_group_notifications_last_reminder_execution' );
+		
+		$default_last_run = $config->get('pos_group_notifications_last_reminder_execution');
+				
+		if ($default_last_run) {
+			$default_last_run = new DrupalDateTime( $config->get('pos_group_notifications_last_reminder_execution'));
+		}
+						
+	}
+	else {
+			
+		$pos_group_notifications_subject_message = $config->get('pos_group_notifications_subject_message');
+		$pos_group_notifications_body_message = $config->get('pos_group_notifications_body_message');	
+		$pos_group_notifications_last_run = $config->get( 'pos_group_notifications_last_run' );
+		
+		$default_last_run = $config->get('pos_group_notifications_last_run');	
+
+		if ($default_last_run) {
+			$default_last_run = new DrupalDateTime( $config->get('pos_group_notifications_last_run'));
+		}
+
+	}
+	
+
+			
+	$last_cron_run = $default_last_run;
+	
+	
+	global $base_url;
+	$host = $base_url;
+	
+	$dataToProcess = array();
+	
+	// access to the main site data
+	$system_site_config = \Drupal::config('system.site');
+ 	$site_email = $system_site_config->get('mail');
+	$site_name = $system_site_config->get('name');
+	    
+    //recover the list of users enabled
+	$ids = \Drupal::entityQuery('user')
+		->condition('status', 1)  
+		->execute();
+
+	$users = User::loadMultiple($ids);
+
+	foreach($users as $user){
+		//recover data per user (their groups and the latest nodes)
+		$dataToProcess[] = pos_getGroupsByUser($user, $executionType);	
+	}
+  
+
+	//create an email per user with their body  
+	foreach($dataToProcess as $data){
+  		$message = [];
+
+		if (array_key_exists('uid', $data)) {
+			
+			//drupal_set_message('--->'.$data['uid']."---", 'error');
+			
+			$default_body = $pos_group_notifications_body_message;
+	
+    		$body = "";
+			$there_are_data_to_send = False;
+			$cnt_groups=0;
+			if ($data['dataByGroup']) {
+				if (sizeof($data['dataByGroup'])>0){
+	
+					$user_body_data_by_group = [];
+					foreach($data['dataByGroup'] as $dataByGroup){			
+					
+						if (sizeof($dataByGroup['gdata'])>0){
+				
+							//$user_body_data_by_group[] = "<h2><a href='".$host."/group/".$dataByGroup['gid']."'>".$dataByGroup['glabel']."</a></h2>";
+							//$user_body_data_by_group[] = "<a href='".$host."/group/".$dataByGroup['gid']."'>".$dataByGroup['glabel']."</a>:";
+							$cnt_groups = $cnt_groups + 1;
+							if ($cnt_groups>1) {
+								$user_body_data_by_group[] = ' ';
+							}
+							
+							$user_body_data_by_group[] = $dataByGroup['glabel']." - ".$host."/group/".$dataByGroup['gid']."/dashboard :";
+							
+							$cnt_documents_per_group = 0;
+					
+							foreach($dataByGroup['gdata'] as $item) {					
+
+								$extraText = "";
+								if (!in_array("mark", $item)) {
+									if ($item['mark']=='MARK_NEW') {
+										$extraText = '(New)';
+									}
+									elseif ($item['mark']=='MARK_UPDATED') {
+										$extraText = '(Updated)';
+									}
+								}
+								
+								$cnt_documents_per_group = $cnt_documents_per_group + 1;
+								
+								//$user_body_data_by_group[] = $cnt_documents_per_group.") <a href='".$host."/node/".$item['nid']."'>".$item['title']." ".$extraText."</a>";
+								$user_body_data_by_group[] = $cnt_documents_per_group.") ".$item['title']." ".$extraText." - ".$host."/node/".$item['nid'];
+								
+					
+							}
+							
+							//we only add information of the group into the body if there are nodes in it
+							if ($cnt_documents_per_group > 0) {
+								$body  = html_entity_decode(implode('&#13;&#10;', $user_body_data_by_group));
+								$there_are_data_to_send = True;					
+							}
+							
+						}
+				
+					}
+			
+					//only send the email to the user if they have content in any of their groups
+					if ($there_are_data_to_send==True) {
+							
+						$body = str_replace("[dynamic_content_per_user]", $body, $pos_group_notifications_body_message);
+						$body = str_replace("[user:display-name]", $data['realname'], $body);
+						$body = str_replace("[site:name]", $site_name, $body);
+						
+						
+						
+						$body = str_replace("[last_cron_run]", $last_cron_run, $body);
+						
+						//$body = str_replace("\n", "</br>", $body);
+						
+						/*
+						$send_mail = new \Drupal\Core\Mail\Plugin\Mail\PhpMail(); // this is used to send HTML emails
+		
+						$message['headers'] = array(
+							'content-type' => 'text/html; charset=UTF-8',
+							'MIME-Version' => '1.0',
+							'reply-to' => $site_email,
+						);
+						*/
+						$to_email = $data['mail'];
+						/*
+						if ($pos_group_notifications_testing_mode==True) {
+							$message['to'] = $pos_group_notifications_primary_email;
+							$to_email = $pos_group_notifications_primary_email;
+						}
+						else {
+							$message['to'] = $data['mail'];
+							$to_email = $data['mail'];
+						}
+						
+						$message['from'] = $site_email;
+						*/
+						$pos_group_notifications_subject_message = str_replace("[site:name]", $site_name, $pos_group_notifications_subject_message);
+						
+						$pos_group_notifications_subject_message = str_replace("[last_cron_run]", $last_cron_run, $pos_group_notifications_subject_message);
+						
+						$message['subject'] = $pos_group_notifications_subject_message;			
+						$message['subject'] = PlainTextOutput::renderFromHtml($message['subject']);			
+						$subject_email = PlainTextOutput::renderFromHtml($message['subject']);
+						
+						$message['body'] = render($body);
+						$body_email = render($body);
+						
+						$message['language'] = \Drupal::currentUser()->getPreferredLangcode();
+						
+						//first test to send an email in D8
+						//drupal_set_message('----------->sending email to user:'.$data['uid'], 'warning');
+						/*						
+						$send_mail->mail($message);
+						
+						//drupal_set_message($message['body'], 'error');
+						
+						//if (!$message['result']) {
+						if (!in_array("result", $message)) {				
+							//drupal_set_message('----------->Unable to send email. Contact the site administrator if the problem persists. To:'.$message['to'], 'error');
+							$extra_text = '-Executed in testing mode:';
+							if ($pos_group_notifications_testing_mode==1) {
+								$extra_text .= " ON";
+							}
+							else {
+								$extra_text .= " OFF";
+							}
+							$extra_text .= "</br>";
+							
+							\Drupal::logger('pos_group_notifications')->error(t('Unable to send email. Contact the site administrator if the problem persists.'). ' </br>'.$extra_text.'</br>-To:'.$message['to']." </br>-Subject:".$message['subject']."</br>-Body:</br>".$message['body']);
+						}
+						*/
+						
+						/*
+						$mailManager = \Drupal::service('plugin.manager.mail');
+  						$module = 'pos_group_notifications';
+  						
+  						
+						
+  						$params['message'] = $body_email;
+  						$params['title'] = $subject_email;
+  						$langcode = \Drupal::currentUser()->getPreferredLangcode();
+  						//$langcode = 'en';
+  						$send = true;
+						*/
+						
+						$key = 'pos_group_notifications'; // Replace with Your key
+						pos_send_custom_email($to_email, $subject_email, $body_email, $key);
+						
+						/*
+  						$result = $mailManager->mail($module, $key, $to_email, $langcode, $params, NULL, $send);
+						
+  						if ($result['result'] != true) {
+								
+  							$extra_text = '-Executed in testing mode:';
+							if ($pos_group_notifications_testing_mode==1) {
+								$extra_text .= " ON";
+							}
+							else {
+								$extra_text .= " OFF";
+							}
+							$extra_text .= "</br>";
+							$extra_text .= '</br>-To:'.$to_email." </br>-Subject:".$subject_email."</br>-Body:</br>".$body_email;
+							
+							$message = t('There was a problem sending your email notification to @email.', array('@email' => $to_email));
+							
+							$message .= "</br>".$extra_text;
+							//drupal_set_message($message, 'error');
+							//\Drupal::logger('mail-log')->error($message);
+							\Drupal::logger('pos_group_notifications')->error($message);
+    						//return;
+  						}		
+						*/		
+						
+					}
+				
+				}
+			}	
+	  
+	  		//drupal_set_message('data -> ---'.$data->uid, 'error');
+	  	}	  
+	}
+  
+	/*
+	// We usually don't want to act every time cron runs (which could be every
+	// minute) so keep a time for the next run in the site state.
+	$next_execution = \Drupal::state()->get('pos_group_notifications.next_execution');
+	$next_execution = !empty($next_execution) ? $next_execution : 0;
+	if (REQUEST_TIME >= $next_execution) {
+    	// This is a silly example of a cron job.
+    	// It just makes it obvious that the job has run without
+    	// making any changes to your database.
+    	\Drupal::logger('pos_group_notifications')->notice('pos_group_notifications ran');
+    	if (\Drupal::state()->get('pos_group_notifications_show_status_message')) {
+      		\Drupal::messenger()->addMessage(t('pos_group_notifications executed at %time', ['%time' => date_iso8601(REQUEST_TIME)]));
+      		\Drupal::state()->set('pos_group_notifications_show_status_message', FALSE);
+		}
+		\Drupal::state()->set('pos_group_notifications.next_execution', REQUEST_TIME + $interval);
+	}
+	*/
+	
+}
+
+function pos_group_notifications_send_emails_solution_trial_not_published() {
+	//drupal_set_message("***----".rand(1, 150)."--START pos_group_notifications_send_emails_solution_trial_not_published.---", 'error');
+
+	$config =  \Drupal::config('pos_group_notifications.settings');
+	$pos_group_notifications_reminder_solution_trial_not_publised_subject = $config->get('pos_group_notifications_reminder_solution_trial_not_publised_subject');
+	$pos_group_notifications_reminder_solution_trial_not_publised_body = $config->get('pos_group_notifications_reminder_solution_trial_not_publised_body');
+
+	// access to the main site data
+	$system_site_config = \Drupal::config('system.site');
+ 	$site_email = $system_site_config->get('mail');
+	$site_name = $system_site_config->get('name');
+	
+	global $base_url;
+	$host = $base_url;	
+	
+	$subject_email = str_replace("[site:name]", $site_name, $pos_group_notifications_reminder_solution_trial_not_publised_subject);
+		
+	$query = \Drupal::entityQuery('group');
+  
+	$groups_ids = $query->execute();
+	
+	$groups = \Drupal\group\Entity\Group::loadMultiple($groups_ids);
+	
+	foreach ($groups as $group) {
+		
+		$gid = $group->id[0]->value;
+		$glabel = $group->label[0]->value;
+		
+		$request_publication = 0;
+		$qa_approved = 0;
+		$qa_comments = "";
+		
+		//if ($gid==65) {
+		if (isset($group->field_publish)) {
+			
+			$request_publication = $group->field_publish[0]->value;
+		}
+		
+		if (isset($group->field_qa_approved)) {
+			$qa_approved = $group->field_qa_approved[0]->value;
+		}
+		
+		if (isset($group->field_qa_comments)) {
+			if ($group->field_qa_comments) {
+				if ($group->field_qa_comments[0]) {
+					$qa_comments = $group->field_qa_comments[0]->value;
+				}
+			}
+		}
+		
+		//Request publication?	-> field_publish	
+		//QA approved?	        -> field_qa_approved
+		//QA comments	        -> field_qa_comments			
+		
+		//if (1==1) {
+		if (($request_publication==1) && ($qa_approved!=1)) {
+			//$cntMembers = $group->getMemberCount();
+			//drupal_set_message("***".rand(1, 150)."----------gid=".$gid."---glabel=".$glabel."<---request_publication=".$request_publication."<---qa_approved=".$qa_approved."<-------", 'error');
+			
+			$members = $group->getMembers();
+			
+			foreach ($members as $member) {
+				$user = $member->getUser();
+				$uid = $user->get('uid')->value;
+    			$realname = $user->get('field_real_name')->value;
+				$mail = $user->get('mail')->value; 
+				
+				$key = 'pos_trial_solution_not_published';
+				
+ 
+				$body_email = $pos_group_notifications_reminder_solution_trial_not_publised_body;
+			
+				$body_email = str_replace("[user:display-name]", $realname, $body_email);
+				$body_email = str_replace("[site:name]", $site_name, $body_email);
+
+				$group_name ="<a href='".$host."/group/".$gid."'>".$glabel."</a>";				
+				$body_email = str_replace("[item:url]", $group_name, $body_email);
+				
+				$body_email = str_replace("[reason]", $qa_comments, $body_email);
+
+				//$body_email= str_replace("\n", "</br>", $body_email);
+
+				$body_email  = html_entity_decode( $body_email);
+				$body_email = render($body_email);			
+				
+				//drupal_set_message("***".rand(1, 150)."----------->Before pos_send_custom_email<-------", 'error');
+				pos_send_custom_email($mail, $subject_email, $body_email, $key);				
+
+				
+			 }
+			
+		}
+	
+	}
+	
+
+  
+	//drupal_set_message("***----".rand(1, 150)."--END pos_group_notifications_send_emails_solution_trial_not_published.---", 'error');
+} 

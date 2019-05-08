@@ -1,0 +1,4 @@
+'administer pos_user_registration_audit':
+  'title': 'Administer PoS users audit'
+  'description': 'Script to load default value.'
+  restrict access: true

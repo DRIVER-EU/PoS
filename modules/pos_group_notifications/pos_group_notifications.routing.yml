@@ -1,0 +1,19 @@
+pos_group_notifications.admin_settings:
+  path: '/admin/config/pos_group_notifications'
+  defaults:
+    _form: '\Drupal\pos_group_notifications\Form\pos_group_notificationsConfigForm'
+    _title: 'PoS Group Notifications Configuration'
+  requirements:
+    _permission: 'administer pos_group_notifications'
+    
+
+pos_group_notifications.mailing_list:
+  path: 'pos_mailinglist'
+  defaults:
+    _form: '\Drupal\pos_group_notifications\Form\pos_group_mailinglistForm'
+    _title: 'Mailing PoS users'
+  requirements:
+    _permission: 'access Mailing PoS users'
+    
+        
+

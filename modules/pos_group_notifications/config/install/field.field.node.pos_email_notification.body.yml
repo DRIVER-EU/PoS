@@ -1,0 +1,22 @@
+# field.field.node.pos_email_notification.body.yml
+langcode: en
+status: true
+dependencies:
+    config:
+        - field.storage.node.body
+        - node.type.pos_email_notification
+    module:
+        - text
+id: node.pos_email_notification.body
+field_name: body
+entity_type: node
+bundle: pos_email_notification
+label: Body
+description: 'Notification message.'
+required: false
+translatable: true
+default_value: {  }
+default_value_callback: ''
+settings:
+    display_summary: true
+field_type: text_with_summary

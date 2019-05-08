@@ -1,0 +1,14 @@
+name: PoS Users audit
+description: 'To store the uid that enabled an user account.'
+core: 8.x
+package: Custom
+
+type: module
+core: 8.x
+version: '8.x-1.0'
+project: 'pos_user_registration_audit'
+configure: pos_user_registration_audit.admin_settings
+
+dependencies:
+  - drupal:user
+  

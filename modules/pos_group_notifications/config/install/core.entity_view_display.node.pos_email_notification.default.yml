@@ -1,0 +1,33 @@
+# core.entity_view_display.node.pos_email_notification.default.yml
+langcode: en
+status: true
+dependencies:
+  config:
+    - field.field.node.pos_email_notification.body
+    - field.field.node.pos_email_notification.field_notification_recipients
+    - node.type.pos_email_notification
+  module:
+    - text
+    - user
+_core:
+  default_config_hash: uimzjG6oCq12ttxEV2H1Hg6KVdhsewLC6cYEegWTqeQ
+id: node.pos_email_notification.default
+targetEntityType: node
+bundle: pos_email_notification
+mode: default
+content:
+  body:
+    label: hidden
+    type: text_default
+    weight: 1
+    settings: {  }
+    third_party_settings: {  }
+    region: content
+  links:
+    weight: 0
+    region: content
+    settings: {  }
+    third_party_settings: {  }
+hidden:
+  field_notification_recipients: true
+

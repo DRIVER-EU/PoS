@@ -1,0 +1,16 @@
+name: PoS utils
+description: 'To add custom utilities.'
+core: 8.x
+package: Custom
+
+type: module
+core: 8.x
+version: '8.x-1.0'
+project: 'pos_utils'
+
+dependencies:
+  - drupal:user
+  - drupal:system
+  - drupal:history
+
+  

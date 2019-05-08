@@ -1,0 +1,8 @@
+'administer PoS Group notifications':
+  'title': 'Administer PoS Group notifications'
+  'description': 'Configure how PoS Group notifications is used on the site.'
+  restrict access: true
+'access Mailing PoS users':
+  'title': 'Access to the webform that allows users to send e-mail to the site members'
+  'description': 'In this form users can send e-mails.'
+  restrict access: true

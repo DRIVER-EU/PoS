@@ -1,0 +1,14 @@
+# node.type.pos_email_notification.yml
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - pos_group_notifications 
+name: 'E-mail notification'
+type: pos_email_notification
+description: 'Content type used in the module <em>pos_group_notifications</em>'
+help: ''
+new_revision: false
+preview_mode: 1
+display_submitted: true

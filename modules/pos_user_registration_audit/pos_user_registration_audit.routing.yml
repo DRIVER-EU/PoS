@@ -1,0 +1,9 @@
+pos_user_registration_audit.admin_settings:
+  path: '/admin/config/pos_user_registration_audit'
+  defaults:
+    _form: '\Drupal\pos_user_registration_audit\Form\pos_user_registration_auditConfigForm'
+    _title: 'PoS user registration audit'
+  requirements:
+    _permission: 'administer pos_user_registration_audit'
+    
+

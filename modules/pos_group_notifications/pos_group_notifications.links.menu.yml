@@ -1,0 +1,13 @@
+pos_group_notifications.config:
+  title: 'PoS Group notifications'
+  description: 'PoS Group notifications Admin Configuration'
+  parent: system.admin_config
+  route_name: pos_group_notifications.admin_settings
+  weight: 100
+  
+pos_group_notifications.mailinglist:
+  title: 'Mailing PoS users'
+  description: 'Mailing PoS users'
+  parent: pos_group_notifications.config
+  route_name: pos_group_notifications.mailing_list
+  weight: 101

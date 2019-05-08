@@ -1,0 +1,45 @@
+<?php
+
+ 
+
+use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
+use Drupal\Core\Routing\RouteMatchInterface;
+
+function pos_utils_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.pos_utils':
+      return t("
+        <h2>PoS utils help module</h2>
+        <p>This module has been created to add some custom hooks like:</p>
+        <ul>
+        <li>hook_entity_load: to call history_write when an entity is loaded with ajax.</li>
+        </ul>
+    ");
+    break;
+  }
+}
+
+// hook _entity_load used to write history_load when we load a node with ajax
+function pos_utils_entity_load(array $entities, $entity_type_id) {
+		
+	if ($entity_type_id=='node') {		
+		$nid = '';		
+		$current_path = \Drupal::service('path.current')->getPath();
+		$result = \Drupal::service('path.alias_manager')->getAliasByPath($current_path);
+		
+		$nid = str_replace("/node/","",$current_path);
+		foreach ($entities as $entity) {
+			//\Drupal::logger('mmp')->error("nid:".$nid."---entiyy id:".$entity->id()."----current_path:".$current_path."----------result:".$result."-----");
+			if ($entity->id() == $nid) {
+				//\Drupal::logger('mmp')->error("update history");				
+				history_write($entity->id());
+	
+			}
+		}
+	}
+}
+
+
+
+
+
