@@ -1,0 +1,7 @@
+{
+  "name": "drupal/pos_utils",
+  "description": "Module used to add some extra utils functionalitis in the PoS site",
+  "type": "drupal-module",  
+  "license": "GPL-2.0+",
+  "minimum-stability": "dev"
+}
