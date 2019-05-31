@@ -1,0 +1,12 @@
+{
+    "name": "driver/pos",
+    "description": "custom Drupal 8 modules for PoS",
+    "type": "Drupal 8 modules",
+    "authors": [
+        {
+            "name": "driverpos-administrator",
+            "email": "driverpos-administrator@lists.atosresearch.eu"
+        }
+    ],
+    "require": {}
+}
