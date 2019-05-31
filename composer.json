@@ -2,6 +2,7 @@
     "name": "driver/pos",
     "description": "custom Drupal 8 modules for PoS",
     "type": "Drupal 8 modules",
+    "minimum-stability" : "dev",
     "require": {
         "php": ">=7.2.4"
     },    
