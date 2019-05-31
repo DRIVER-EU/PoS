@@ -1,4 +1,4 @@
-name: PoS utils
+name: 'PoS_utils'
 description: 'To add custom utilities.'
 core: 8.x
 package: Custom
