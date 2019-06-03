@@ -1,0 +1,18 @@
+{
+    "name": "driver/pos",
+    "description": "custom Drupal 8 modules for PoS",
+    "keywords": [
+        "PoS"
+    ],
+    "type": "drupal-custom-module",
+    "require": {
+        "php": ">=7.2.4"
+    },    
+    "authors": [
+        {
+            "name": "driverpos-administrator",
+            "email": "driverpos-administrator@lists.atosresearch.eu"
+        }
+    ],
+    "require": {}
+}
