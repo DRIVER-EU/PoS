@@ -14,5 +14,12 @@
             "email": "driverpos-administrator@lists.atosresearch.eu"
         }
     ],
-    "require": {}
+    "repositories": [{
+            "type": "git",
+            "url": "../modules"
+        }
+    ],  
+    "require": {
+        "custom/pos_utils": "*"
+    }
 }
