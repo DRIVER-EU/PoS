@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "name": "DRIVER-EU/pos_utils",
   "type": "drupal-custom-module",
   "description": "This module has been created add custom utilities in PoS ",
@@ -6,3 +7,11 @@
   "license": "GPL-2.0+",
   "require": { }
 }
+=======
+  "name": "custom/pos_utils",
+  "description": "Module used to add some extra utils functionalitis in the PoS site",
+  "type": "drupal-custom-module",  
+  "license": "GPL-2.0+",
+  "minimum-stability": "dev"
+}
+>>>>>>> 8d8f8f65a49cd41efdd9260db3380ea9837bc7bc
