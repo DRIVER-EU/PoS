@@ -4,6 +4,112 @@
 
 use Drupal\Core\Cache\RefinableCacheableDependencyInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Link; // This should be added in controller
+use Drupal\Core\Url;
+
+
+function pos_utils_page_attachments(array &$attachments) {
+	$attachments['#attached']['library'][] = 'pos_utils/pos_utils';
+
+	/*
+	$attachments['#attached']['css'] = array(
+		drupal_get_path('module', 'dropbutton') . '/dropbutton.css',
+	);
+	*/
+  
+}
+
+
+
+function pos_utils_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form_state, $form_id) {
+		
+	if ($form_id=='node_solution_use_case_edit_form') {
+		
+		$node = \Drupal::routeMatch()->getParameter('node');
+		if ($node instanceof \Drupal\node\NodeInterface) {
+			$languageExtraString = ""; 
+  			// You can get nid and anything else you need from the node object.
+  			$nid = $node->id();
+  			$finalId = $nid;  
+  			$content_translation_outdated = $node->get('content_translation_outdated')[0]->value;
+			$current_vid = $node->get('vid')[0]->value;
+			//$langcode = 'it';
+			$langcode = $node->get('langcode')[0]->value;
+			
+			if ($content_translation_outdated==1) {
+
+				$last_changed_translation_node = "";
+				$vids = \Drupal::entityManager()->getStorage('node')->revisionIds($node);
+								
+				if (sizeof($vids)>0) {
+					$last_changed_translation_node = $vids[0];
+				}			
+				
+				$connection = \Drupal::database();
+				$result = $connection->query("SELECT vid FROM {node_field_revision} WHERE nid = :id and langcode = :langcode and content_translation_outdated=0 order by vid desc limit 1 ", [':id' => $finalId,':langcode' =>$langcode,]);				
+									
+				if ($result) {
+					while ($row = $result->fetchAssoc()) {
+						// Do something with:
+						$last_changed_translation_node = $row['vid'];
+					}
+				}
+				
+
+				//$languageExtraString = 'finalId='.$finalId.'---current_vid:'.$current_vid.'<->content_translation_outdated:'.$content_translation_outdated.'<->langcode:'.$langcode."<--";
+ 				//$languageExtraString = '<a class="use-ajax" data-dialog-options="{&quot;width&quot;:800,&quot;dialogClass&quot;:&quot;&quot;}" data-dialog-type="dialog" data-dialog-renderer="off_canvas" href="/pos-dev/web/en/node/938/revisions/view/1324/1585/visual_inline">Show Diffs</a>';	
+				//$languageExtraString = '<a href="/pos-dev/web/en/node/938/revisions/view/1324/1585/visual_inline" class="ajax-load-entity-data" rel=".destinationclassdiv">'.t('Show differences').'</a>';
+				//drupal_set_message("form_id =".$form_id."<----", 'error');
+
+						
+				
+				global $base_url;
+				
+				$urlDifferences = $base_url.'/en/node/'.$finalId.'/revisions/view/'.$last_changed_translation_node.'/'.$current_vid.'/visual_inline?view_mode=teaser&ajax=1';
+				
+				//$languageExtraString .= '<a id="btndifferences" class="use-ajax btn" data-dialog-options="{&quot;width&quot;:800,&quot;dialogClass&quot;:&quot;&quot;}" data-dialog-type="dialog" href="'.$urlDifferences.'">'.t('Show differences').'</a>';		
+
+				$languageExtraString .= '<a id="btnshowdifferences" class="ajax-link active" href="'.$urlDifferences.'" rel=".displayDifferences">'.t('Show differences').'</a>';
+				//$languageExtraString .= '<a class="" href="">'.t('Hide differences').'</a>';
+				//$languageExtraString .= '<div id="displayDifferences" class="displayDifferences"></div>';
+				
+				//$languageExtraString2 .= '<a href="javascript:document.getElementById(\'destinationclassdiv\').innerHTML = \'\';">TEST</a>';
+			//visually-hidden	
+				$form['differences'] = array(
+				'#type' => 'markup',
+				'#prefix' => '</br><div>'.$languageExtraString.'</div>',
+				//'#markup' => t('hi!!'),
+				'#suffix' => '',
+				'#weight' => -12,
+				);
+				
+				$form['hidedifferences'] = array(
+				    '#name' => 'clear',
+				    '#type' => 'button',
+				    '#value' => t('Hide differences'),
+				    '#weight' => -11,
+				    '#attributes' => array(
+				    	'id' => 'btnhidedifferences',
+				    	'class' => array('btnhidedifferences', 'visually-hidden'),
+				    	'onclick' => 'document.getElementById("displayDifferences").innerHTML = ""; var element = document.getElementById("btnhidedifferences"); element.classList.add("visually-hidden"); var element2 = document.getElementById("btnshowdifferences"); element2.classList.remove("visually-hidden"); return false;'
+						),
+				  );	
+				  
+				  
+				$form['displaydifferencesmarkup'] = array(
+					'#type' => 'markup',
+					'#prefix' => '',
+					//'#markup' => t('hi!!'),
+					'#suffix' => '<div id="displayDifferences" class="displayDifferences"></div>',
+					'#weight' => -10,
+				);				  					
+
+			}
+		}
+		
+	}
+		
+}
 
 function pos_utils_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
@@ -13,6 +119,7 @@ function pos_utils_help($route_name, RouteMatchInterface $route_match) {
         <p>This module has been created to add some custom hooks like:</p>
         <ul>
         <li>hook_entity_load: to call history_write when an entity is loaded with ajax.</li>
+        <li>hook_views_pre_render: to render the view node_translations_status and display flags with the current status of the translations.</li>
         </ul>
     ");
     break;
@@ -40,6 +147,503 @@ function pos_utils_entity_load(array $entities, $entity_type_id) {
 }
 
 
+use Drupal\Core\Language\LanguageInterface;
+use Drupal\node\Entity\Node;
 
+use Drupal\language\Entity\ContentLanguageSettings;
+
+
+function pos_utils_views_pre_render(\Drupal\views\ViewExecutable $view) {
+		
+	//drupal_set_message("---pos_utils_views_pre_render=".$view->id());
+
+	global $base_url;
+	$current_path = \Drupal::service('path.current')->getPath();
+	//drupal_set_message("---pos_utils_views_pre_render current_path=".$current_path);
+	$current_uri = \Drupal::request()->getRequestUri();
+	//drupal_set_message("---pos_utils_views_pre_render current_uri=".$current_uri);
+	//$host = $base_url;
+	//get current language id
+	$current_language = \Drupal::languageManager()->getCurrentLanguage()->getId();
+	// Get current user
+	$user = \Drupal::currentUser();
+						
+	if (($view->id() == 'node_translations_status') || ($view->id() == 'group_translations_status')){
+		
+		
+		
+		$connection = \Drupal::database();
+		
+	  	//$languages = languageManager()->getLanguages();
+		$languages = \Drupal::languageManager()->getLanguages();
+		
+		foreach ($languages as $language) {
+        	$language_name = $language->getName();
+        	$langcode = $language->getId();
+        	//drupal_set_message("---pos_utils_views_pre_render language_name=".$language_name."--langcode=".$langcode);
+	  	}
+	    	
+		//$view->field['nothing']->options['alter']['text'] = 'My custom text';
+		
+		foreach ($view->result as $value) {
+			
+			if ($view->id() == 'node_translations_status') {
+				//recover node data
+				$nid = $value->_entity->get('nid')->value;
+				//drupal_set_message("nid=".$nid."---");
+				$node = Node::load($nid);
+				
+				$checkUpdateItem = $node->access('update', $user);
+				//drupal_set_message("---check=".gettype($checkUpdateItem).'--'.(string) $checkUpdateItem);
+				
+				$vids = \Drupal::entityManager()->getStorage('node')->revisionIds($node);
+				
+				$last_changed_translation_node = "";
+				if (sizeof($vids)>0) {
+					$last_changed_translation_node = $vids[0];
+				}
+
+				$entity_type_id = 'node'; 
+      			//$value->_entity->set('title', "Test-".$nid);
+				//$nodeTitle = $node->get('title')->value;
+				$bundle = $node->getType();
+				$finalId = $nid;
+			}
+			else if ($view->id() == 'group_translations_status') {
+				//recover group data				
+				$gid = $value->_entity->get('id')->value;
+				//drupal_set_message("gid:".$gid."---");
+				//$gid = 95;
+				//drupal_set_message("gid=".$gid."---");
+				$group = \Drupal\group\Entity\Group::load($gid);
+				
+				$checkUpdateItem = $group->access('update', $user);
+				//drupal_set_message("---check=".gettype($checkUpdateItem).'--'.(string) $checkUpdateItem);
+				
+				$entity_type_id = 'group';	
+				
+				// Get a group storage object.
+				//$group_storage = \Drupal::entityTypeManager()->getStorage('group');
+				// Load a single group.
+				//$group_storage->load($gid);
+				
+				//$node->hasTranslation
+				$finalId = $gid;
+			}
+
+			$route_name_matches = [];
+			$definition = Drupal::entityTypeManager()->getDefinition($entity_type_id);
+			
+			$isTanslatable = 0;
+			if ($definition->hasKey('langcode')) {
+				$isTanslatable = 1;
+			}						
+			$languageExtraString = "";
+			
+			if ($isTanslatable==1) {
+				$languageExtraString = '<div class="">';
+				$languageExtraString .= '<ul class="links-translations">';
+				foreach ($languages as $language) {
+					$urlToTheNode = "";
+					$urlToTheNodeView = "";
+					$statusString = "";
+					$langcode = $language->getId();
+					$langcode_name = $language->getName();
+					
+					$available = False;
+					$outated = False;
+					$extraClass = '';
+					
+					if (($entity_type_id == 'node') || ($entity_type_id == 'group')) {
+
+						//drupal_set_message($finalId."--".$entity_type_id."---langcode:".$langcode."--");
+						$itemHasTranslation = False;
+						if ($entity_type_id == 'node')  {
+
+				// Check for permission
+				//$check = $user->hasPermission('Create translations');
+				//$check = $user->hasPermission('Edit translations');
+				//drupal_set_message("---check=".(string) $check);
+
+							
+							if ($node->hasTranslation($langcode)) {
+		  						$translation = $node->getTranslation($langcode);
+								$itemHasTranslation = True;
+								$check = $user->hasPermission('Edit translations');
+								
+								$current_vid = $translation->get('vid')[0]->value;
+								$trans_created = $translation->get('created')[0]->value;
+								$trans_changed = $translation->get('changed')[0]->value;
+								$revision_timestamp = $translation->get('revision_timestamp')[0]->value;
+								$content_translation_source = $translation->get('content_translation_source')[0]->value;
+
+							}
+							else {
+								$check = $user->hasPermission('Create translations');
+							}
+						}
+						else if ($entity_type_id == 'group')  {
+							
+							if ($group->hasTranslation($langcode)) {
+								try {
+		  							//$translation = $group->getTranslation($langcode);
+									//$itemHasTranslation = True;
+									
+									$result = $connection->query("SELECT label, content_translation_outdated, content_translation_status  FROM {groups_field_data} WHERE id = :id and langcode = :langcode", [':id' => $finalId,':langcode' =>$langcode]);						
+									
+									if ($result) {
+  										while ($row = $result->fetchAssoc()) {
+    										// Do something with:
+    										$nodeRevision_default = 0;
+											$nodeRevision_translation_affected = $row['content_translation_status'];
+											$nodeRevision_content_translation_outdated =  $row['content_translation_outdated'];
+											$itemHasTranslation = True;
+											$check = $user->hasPermission('Edit translations');
+  										}
+									}
+									
+									//drupal_set_message("gid=".$finalId." has Translation ---translationsids['label']:----");
+									
+								}
+								catch(Exception $e) {
+									//drupal_set_message("--NO translation for gid=".$finalId."----Message:".$e->getMessage()."---");
+									$itemHasTranslation = False;
+									$check = $user->hasPermission('Create translations');
+								}
+							}
+							else {
+								//NO translation
+								//drupal_set_message("--NO translation for gid=".$finalId."----");
+								$itemHasTranslation = False;
+							}
+						}
+						
+						if ($itemHasTranslation) {
+						//if ($node->hasTranslation($langcode)) {
+		  					//$translation = $node->getTranslation($langcode);
+							
+		  					
+							//$translated_status = $translation->status();
+							
+							if ($entity_type_id == 'node')  {
+								//$nodeStatus = $translation->get('status')->value;
+								$nodeRevision_default = '';
+								$nodeRevision_default = $translation->get('revision_default')[0]->value;
+								$nodeRevision_translation_affected = '';
+								$nodeRevision_translation_affected = $translation->get('revision_translation_affected')[0]->value;			
+								$nodeRevision_content_translation_outdated = $translation->get('content_translation_outdated')[0]->value;
+							}
+							//$languageExtraString .= (string)$nodeRevision_content_translation_outdated;
+							if ($nodeRevision_content_translation_outdated==1) {
+								if ($check) {
+									$urlToTheNode = $base_url."/".$langcode."/".$entity_type_id."/".$finalId."/edit?destination=".$current_uri;
+									$urlToTheNodeView = $base_url."/".$langcode."/".$entity_type_id."/".$finalId."?destination=".$current_uri;
+								}
+								else {
+									$urlToTheNode = $base_url."/".$langcode."/".$entity_type_id."/".$finalId;
+									$urlToTheNodeView = $base_url."/".$langcode."/".$entity_type_id."/".$finalId;
+								}
+								
+								$outated = True;
+								$statusString .= ' '.t('Published');
+								$statusString .= ' '.t('outdated');
+								//drupal_set_message($nid."--langcode:".$langcode." - Published outdated!!!", 'error');
+								
+								 $extraClass = 'messages--warning';
+
+							}
+							else {
+								//$urlToTheNode = $node->toUrl()->toString();
+								if ($check) {
+									$urlToTheNode = $base_url."/".$langcode."/".$entity_type_id."/".$finalId."/edit?destination=".$current_uri;
+									$urlToTheNodeView = $base_url."/".$langcode."/".$entity_type_id."/".$finalId."/edit?destination=".$current_uri;
+								}
+								else {
+									$urlToTheNode = $base_url."/".$langcode."/".$entity_type_id."/".$finalId;
+									$urlToTheNodeView = $base_url."/".$langcode."/".$entity_type_id."/".$finalId;
+								}
+								
+								$available = True;
+								$statusString .= ' '.t('Published');
+								//drupal_set_message($nid."--langcode:".$langcode." - Published!!!");
+								$extraClass = 'messages--status';
+							}
+							//drupal_set_message($nid."--langcode:".$langcode."---translated_title=".$translated_title."---nodeStatus:".(string) $nodeStatus."----nodeRevision_default:".(string) $nodeRevision_default."----nodeRevision_translation_affected:".(string) $nodeRevision_translation_affected."---nodeRevision_content_translation_outdated:".(string) $nodeRevision_content_translation_outdated);
+		
+						}
+						else {
+							if ($check) {
+								$urlToTheNode = $base_url."/".$langcode."/".$entity_type_id."/".$finalId."/translations/add/en/".$langcode."?destination=".$current_uri;
+								$urlToTheNodeView = "";
+							}
+							else {
+								$urlToTheNode = "";
+								$urlToTheNodeView = "";
+							}
+							$statusString .= ' '.t('Not translated');
+							//drupal_set_message($nid."--langcode:".$langcode." - Not translated!!!");
+							$extraClass = 'messages--error';
+						}
+					}
+					$languageExtraString .= '<li class="flagli">';
+					$languageExtraString .= '<div class="messages messages-language-flags '.$extraClass.' js" >';
+					
+					/*
+					if ($urlToTheNode!=""){						
+						//to use canvas
+
+						$languageExtraString .= '<a class="use-ajax" data-dialog-options="{&quot;width&quot;:800,&quot;dialogClass&quot;:&quot;&quot;}" data-dialog-type="dialog" data-dialog-renderer="off_canvas" href="'.$urlToTheNode.'" title="'.$langcode_name.' '.$statusString.'">';
+						//to use modal window					
+						//$languageExtraString .= '<a class="use-ajax" data-dialog-options="{&quot;width&quot;:800,&quot;dialogClass&quot;:&quot;&quot;}" data-dialog-type="dialog" href="'.$urlToTheNode.'" title="'.$langcode_name.' '.$statusString.'">';
+					}
+					*/					
+					$languageExtraString .= "<span class='".$langcode."' title='".$langcode_name." ".$statusString."'></span>";
+					
+					/*
+					if ($urlToTheNode!=""){						
+							$languageExtraString .= '</a>';
+					}
+					*/
+					
+					/*
+					if (($entity_type_id == 'node') && ($outated)) {
+												
+						$result = $connection->query("SELECT vid FROM {node_field_revision} WHERE nid = :id and langcode = :langcode and content_translation_outdated=0 order by vid desc limit 1 ", [':id' => $finalId,':langcode' =>$langcode,]);						
+						
+						
+									
+						if ($result) {
+							while ($row = $result->fetchAssoc()) {
+								// Do something with:
+								$last_changed_translation_node = $row['vid'];
+							}
+						}
+						
+						
+						//uncomment this to add a link to the diff between versions						
+						//$languageExtraString .= ' <a class="use-ajax" data-dialog-options="{&quot;width&quot;:800,&quot;dialogClass&quot;:&quot;&quot;}" data-dialog-type="dialog" href="'.$base_url.'/en/node/'.$finalId.'/revisions/view/'.$last_changed_translation_node.'/'.$current_vid.'/visual_inline?view_mode=teaser&ajax=1" title="'.$langcode_name.' '.$statusString.'">diff</a>';
+
+
+					}
+					*/
+
+					if (($urlToTheNode!="") || ($urlToTheNodeView!="")) {
+						$linkText = "Create";
+						if ($itemHasTranslation) {
+							$linkText = "Edit";	
+						}
+						$linkEditNode = '<a class="use-ajax" data-dialog-options="{&quot;width&quot;:800,&quot;dialogClass&quot;:&quot;&quot;}" data-dialog-type="dialog" data-dialog-renderer="off_canvas" href="'.$urlToTheNode.'" title="'.t($linkText).' '.$langcode_name.' '.$statusString.'">'.t($linkText).'</a>';
+						$linkViewNode = '<a class="use-ajax" data-dialog-options="{&quot;width&quot;:800,&quot;dialogClass&quot;:&quot;&quot;}" data-dialog-type="dialog" data-dialog-renderer="off_canvas" href="'.$urlToTheNodeView.'" title="'.t('View').' '.$langcode_name.' '.$statusString.'">'.t('View').'</a>';
+	
+						$extraDropbuttonClass = "dropbutton";
+						
+						$displayLink = False;
+						if (($checkUpdateItem) && ($linkText == "Edit")) {
+							$displayLink = True;
+						}
+						else if ($linkText == "Create") {
+							$displayLink = True;
+						}
+						
+						if (($urlToTheNode!="") && ($urlToTheNodeView!="")) {
+							if ($displayLink) {
+								$extraDropbuttonClass = "dropbutton-multiple";
+							}
+						}
+						
+						
+						$languageExtraString .= '
+							<div class="contextual-editing">
+								<div class="dropbutton-wrapper '.$extraDropbuttonClass.'">
+									<div class="dropbutton-widget">
+										<ul class="dropbutton">';
+											if ($urlToTheNodeView!="") {
+												$languageExtraString .= '<li class="view-node dropbutton-action">'.$linkViewNode.'</li>';
+											}
+											/*
+											if (($urlToTheNode!="") && ($urlToTheNodeView!="")) {
+												$languageExtraString .= '<li class="dropbutton-toggle">
+													<button type="button">
+														<span class="dropbutton-arrow">
+															<span class="visually-hidden">List additional actions</span>
+														</span>
+													</button>
+												</li>';
+											}
+											*/
+											if ($urlToTheNode!="") {
+												
+												if ($displayLink) {
+													$languageExtraString .= '<li class="edit-node dropbutton-action secondary-action">'.$linkEditNode.'</li>';	
+												}
+												
+											}
+										$languageExtraString .= '</ul>
+									</div>
+								</div>
+							</div>';	
+												
+					}
+				
+					
+					$languageExtraString .= '</div>';					
+					$languageExtraString .= '';
+					
+					$languageExtraString .= '</li>';
+
+				}
+				$languageExtraString .= '</ul>';
+				$languageExtraString .= '</div>';
+				
+	  		}
+
+	  		
+	  		$view->header['area']->options['content']['value'] = $languageExtraString;
+
+
+    }    
+
+
+  }
+}
+
+/*	
+function pos_utils_menu_local_tasks_alter(&$data, $route_name, RefinableCacheableDependencyInterface $cacheability) {
+		
+	$current_path = \Drupal::service('path.current')->getPath();
+	drupal_set_message("---current_path=".$current_path);
+	\Drupal::logger('mmp')->error("__current_path:".$current_path);
+	
+
+  //if ($route_name == 'entity.node.canonical') {
+    // Vary cache by ?destination query argument.
+    $cacheability->addCacheContexts(['url.query_args:destination']);
+
+    // Get the 'destination' query argument from current request.
+	
+    $destination = \Drupal::request()->query->get('destination');
+	
+	
+    if (empty($destination)) {
+    	drupal_set_message("---NO DESTINATION");
+      	// No destination set for current request - we can exit now.
+      	return;
+    }
+	
+	
+	global $base_url;
+	global $base_path;
+	
+	$destination = str_replace("'","",$destination);
+	$destination = str_replace('"','',$destination);
+	$destination = str_replace($base_url,'',$destination);
+	$destination = str_replace($base_path,'',$destination);
+	
+	$destination = $base_path.''.$destination;
+	drupal_set_message("---destination=".$destination);
+	
+    foreach ($data['tabs'] as $items) {
+      foreach ($items as $item) {
+      	
+        //// @var \Drupal\Core\Url $url 
+        $url = $item['#link']['url'];
+        $query_arguments = $url->getOption('query');
+        if (is_null($query_arguments)) {
+          $query_arguments = [];
+        }
+        $query_arguments['destination'] = $destination;
+        $url->setOption('query', $query_arguments);
+      }
+    }
+  //}
+
+}
+*/
+
+//Use \Drupal\Core\Routing;
+
+/**
+* Implements hook_preprocess_HOOK().
+*/
+/*
+function pos_utils_preprocess_block(&$variables) {
+	drupal_set_message("---pos_utils_preprocess_block 1 ---plugin_id=".$variables['plugin_id']."----derivative_plugin_id=".$variables['derivative_plugin_id']."----");
+	$variables['elements']['#cache']['max-age'] = 0;
+
+	//if($variables['plugin_id'] == 'system_main_block') {
+//	if($variables['derivative_plugin_id'] == 'main') {
+		$variables['#cache']['max-age'] = 0;
+		$variables['elements']['#cache']['max-age'] = 0;
+	//}
+
+}
+*/
+/*
+function pos_utils_preprocess_menu(&$variables) {
+	
+	drupal_set_message("---pos_utils_preprocess_menu 1 -------menu name=".$variables['menu_name']);
+	foreach ($variables as $k=>$v) {
+		drupal_set_message("---k=".$k."---");
+	}
+		
+}
+*/
+
+//alter links add open in modal
+/*
+function pos_utils_link_alter(&$vars) {
+	drupal_set_message("---pos_utils_link_alter 1 ---");
+	
+	
+	//foreach ($vars['options'] as $k=>$v) {
+	//	drupal_set_message("---k=".$k."---");
+	//}
+	
+	$incustommodal = \Drupal::request()->query->get('incustommodal');
+	drupal_set_message("---incustommodal=".$incustommodal."---");
+
+	//incustommodal
+	
+	if ($incustommodal == 1) {
+		
+		//drupal_set_message("DINS if ".$vars['text']);
+		if ($vars['options']['attributes']['class']) {
+			array_push($vars['options']['attributes']['class'],'use-ajax');
+		}
+		else {
+			$vars['options']['attributes']['class'] = ['use-ajax'];
+		}
+	
+		$vars['options']['attributes']['data-dialog-options'] = '{"width":800,"dialogClass":""}';
+		$vars['options']['attributes']['data-dialog-type'] = 'modal'; 
+//		$vars['options']['attributes']['data-dialog-type'] = "dialog";
+		$vars['options']['attributes']['data-drupal-link-system-path'] = '';
+		
+		
+		
+	
+
+		$vars['text'] = t('MMP, @name', ['@name' => $vars['text']]);
+		
+		
+  		
+	}
+
+
+}
+*/
+  
+/**
+ * Implements hook_menu_alter().
+ */
+/*
+function __pos_utils_link_alter(&$data, $route_name) {
+	drupal_set_message("---pos_utils_link_alter 1 ---".$route_name."--");
+	
+	foreach ($data as $k =>$v) {
+		drupal_set_message("---k=".gettype($k));
+	}
+}
+*/
 
 

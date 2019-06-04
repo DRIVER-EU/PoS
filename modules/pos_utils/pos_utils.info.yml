@@ -12,5 +12,4 @@ dependencies:
   - drupal:user
   - drupal:system
   - drupal:history
-
-  
+ 

@@ -112,3 +112,165 @@ function pos_user_registration_audit_registration_form_submit(array $form, FormS
 	
 }
 
+//hook _entit_insert, used to check if the user has been created by the linked in account.
+//we do this hook to se the status of the user to blocked
+use Symfony\Component\HttpFoundation\RedirectResponse;
+use Drupal\Core\Link;
+use Drupal\Core\Url;
+
+
+//hook user_presave, used to set the correct status in case the site is configured al users needs approval
+//this hook is here to try to solve this bug https://www.drupal.org/project/social_auth/issues/3056889
+//also we add the control for the configuration in driver with LinkedIn 
+function pos_user_registration_audit_user_presave($account) {
+		
+	//only for new accounts		
+	if ($account->isNew()) {
+		
+		//we check if the account is created by an anonymous user
+		
+		if (\Drupal::currentUser()->isAuthenticated()) {
+			drupal_set_message("---account created by a logged user, we don't need to cheek more things---");
+		}
+		else {
+			drupal_set_message("---account created by an anonymous user, we must check how we must create the new account---");
+		
+			$config = \Drupal::config('user.settings');	
+			$typeOfRegistration = $config->get('register');
+			if ($typeOfRegistration=='visitors_admin_approval') {
+				$account->status = 0;	
+			} 
+				
+			//driver control user status
+			$autoApproveLinkedInUsers = False;
+			
+			$configLinkedIn = \Drupal::config('pos_user_registration_audit.settings');
+			$pos_linkedin_new_user_enabled = $configLinkedIn->get('pos_linkedin_new_user_enabled');
+			$pos_linkedin_new_user_behavior_config = $configLinkedIn->get('pos_linkedin_new_user_behavior_config');
+			
+			if ($pos_linkedin_new_user_enabled==1) {
+				
+				if ($pos_linkedin_new_user_behavior_config==2) {
+					//drupal_set_message("---user must be approved and logged---");
+					$autoApproveLinkedInUsers = True;
+					//$account->status = 1;
+				}
+				else {
+					//drupal_set_message("---user must be blocked---");
+					$autoApproveLinkedInUsers = False;
+				}
+			}
+			
+			if ($autoApproveLinkedInUsers) {
+				$account->status = 1;	
+			}
+		}
+	}
+	
+}
+
+
+function pos_user_registration_audit_user_insert(Drupal\Core\Entity\EntityInterface $entity) {
+	drupal_set_message("*******---pos_user_registration_audit_user_insert---");
+	//foreach ($entity as $k=>$v) {
+	//	drupal_set_message("---k---".$k);
+	//}
+
+	$configLinkedIn = \Drupal::config('pos_user_registration_audit.settings');
+	$pos_linkedin_new_user_enabled = $configLinkedIn->get('pos_linkedin_new_user_enabled');
+	$pos_linkedin_new_user_behavior_config = $configLinkedIn->get('pos_linkedin_new_user_behavior_config');
+	
+	if ($pos_linkedin_new_user_enabled==1) {
+		
+		//drupal_set_message("---pos_linkedin_new_user_enabled enabled---");
+		//Recover how is configured the user registration in the site
+		$config = \Drupal::config('user.settings');
+		$typeOfRegistration = $config->get('register');
+		$autoApproveLinkedInUsers = False;
+		if (($typeOfRegistration=='visitors_admin_approval') && ($pos_linkedin_new_user_behavior_config==2)) {
+			//drupal_set_message("---user must be approved and logged---");
+			$autoApproveLinkedInUsers = True;
+		}
+		else {
+			//drupal_set_message("---user must be blocked---");
+			$autoApproveLinkedInUsers = False;
+		}
+		
+		//we recover entity id from the entity created	
+		$entityUid = $entity->get('uid')->getValue();
+		$entityUid = $entityUid[0]['value'];	
+		//drupal_set_message("------entityUid:".$entityUid."<-----");
+		
+		//recover the entitity status, for users status = 0 -> Bloqued, status = 1 -> Active
+		$entityStatus = $entity->get('status')->getValue();
+		$entityStatus = $entityStatus[0]['value'];	
+		//drupal_set_message("------entityStatus:".$entityStatus."<-----");
+		
+		//recover content of the field real name. this field is mandatory into the create user form, it can only be null if the user is created by the linkedin login
+		$field_real_name = $entity->get('field_real_name')->getValue();
+		$field_real_name = $field_real_name[0]['value'];
+		//drupal_set_message("------field_real_name:".$field_real_name."<-----");
+		
+		//ig realname is null and the status is active this means that the user has been cerated using linkedin and their status must be Blocked
+		//if (($field_real_name=="") && ($entityStatus==1)) {
+		if ($field_real_name=="") {
+			$user = User::load($entityUid);
+			$usernameValue = $entity->get('name')->getValue();
+			$usernameValue = $usernameValue[0]['value'];			
+			$user->set('field_real_name', $usernameValue);
+			
+			if ($autoApproveLinkedInUsers == True) {
+				//as the users has not been autologged by the social_auth_linkedin we do it here
+				
+				
+				//we autoaccept terms and conditions				
+				$user->set('field_terms_and_conditions', True);
+				
+				//we set user 1 as user id that enable/validate the accout
+				
+				$user->set('field_account_enabled_by', 1);
+				$user->save();
+				
+				//we add a new message to inform users that the account has been automatically approved by the system
+				
+				//$pass_link = \Drupal\Core\Link::fromTextAndUrl('here', base_path()."about/terms-conditions")->toString();
+				
+				//$pass_link = Link::fromTextAndUrl(t('here'), Url::fromUri(base_path()."about/terms-conditions",array('attributes' => array('target' => '_blank'))))->toString();
+				
+				//$pass_link = \Drupal::l(t('here'), base_path()."about/terms-conditions");
+				$link = \Drupal\Core\Url::fromRoute('entity.node.canonical', ['node' => 59])->toString();
+				//global $base_url;
+				//$link = Link::fromTextAndUrl('here', Url::fromUri($base_url.'about/terms-conditions'));
+				//about/terms-conditions
+				
+				//drupal_set_message("warning 1", "warning");
+				//$errors = drupal_get_messages('warning');
+				drupal_set_message(t("Your account has been automatically approved by the system. Terms and conditions has been accepted by default. Click <a href='@link'>here</a> to read it.", array('@link' => $link)), "warning");
+				//drupal_set_message("warning 2", "warning");
+				
+//				drupal_set_message(t('The e-mail has been published <a href="@link">here</a>.', array('@link' => $link)));
+				
+				user_login_finalize($user);	
+				
+				$response = new RedirectResponse(base_path()."user/".$entityUid."/edit");
+  				$response->send();
+				
+			}
+			else {
+				//as the social_auth_linkedin sets the status of user to 1, but the message "Your account was created, but it needs administrator's approval." appears n the screen
+				//we set the user status to 0 (Bloqued)		
+				//update user data to set it as blocked					
+				//$user = \Drupal\user\Entity\User::load($entityUid);		
+				
+				//we autoaccept terms and conditions				
+				$user->set('field_terms_and_conditions', True);
+				
+				// Set the field value new value.
+				//we did this into the presave
+				//$user->set('status', 0);
+				// Save the $user object, else changes won't persist.
+				$user->save();
+			}
+		}
+	}
+}

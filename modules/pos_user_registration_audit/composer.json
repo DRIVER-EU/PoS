@@ -1,0 +1,8 @@
+{
+  "name": "DRIVER-EU/pos_user_registration_audit",
+  "type": "drupal-custom-module",
+  "description": "This module has been created to store the user id that enable an user into the PoS site",
+  "keywords": ["Drupal", "PoS", "users"],
+  "license": "GPL-2.0+",
+  "require": { }
+}

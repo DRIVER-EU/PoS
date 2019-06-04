@@ -6,4 +6,10 @@ pos_user_registration_audit.admin_settings:
   requirements:
     _permission: 'administer pos_user_registration_audit'
     
-
+pos_user_registration_audit.login_linkedin_settings:    
+  path: '/admin/config/pos_user_registration_linkedin_authentication'
+  defaults:
+    _form: '\Drupal\pos_user_registration_audit\Form\pos_user_registration_linkedin_authentication'
+    _title: 'PoS linkedin config'
+  requirements:
+    _permission: 'administer pos_user_registration_audit'

@@ -1,0 +1,11 @@
+pos_utils:
+  version: 1.x  
+  js:
+    /core/misc/dropbutton/dropbutton.js: {}
+    js/pos_utils.js: {}    
+  css:
+    component:
+      /core/misc/dropbutton/dropbutton.css: {}
+      /core/themes/classy/css/components/dropbutton.css: {}
+  dependencies:
+    - core/misc/dropbutton

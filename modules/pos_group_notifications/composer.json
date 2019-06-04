@@ -1,0 +1,8 @@
+{
+  "name": "DRIVER-EU/pos_group_notifications",
+  "type": "drupal-custom-module",
+  "description": "This module has been created to send the e-mails notifications for the PoS",
+  "keywords": ["Drupal", "PoS", "notifications"],
+  "license": "GPL-2.0+",
+  "require": { }
+}

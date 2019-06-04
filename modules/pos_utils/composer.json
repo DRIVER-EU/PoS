@@ -1,0 +1,8 @@
+{
+  "name": "DRIVER-EU/pos_utils",
+  "type": "drupal-custom-module",
+  "description": "This module has been created add custom utilities in PoS ",
+  "keywords": ["Drupal", "PoS", "utils"],
+  "license": "GPL-2.0+",
+  "require": { }
+}
