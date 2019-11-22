@@ -281,12 +281,30 @@ class pos_group_mailinglistForm extends ConfigFormBase {
 		);
 		  
 		$form['pos_group_mailinglist_body_message'] = array(
-			'#type' => 'textarea',
-			//'#type' => 'text_format',
+			//'#type' => 'textarea',
+			'#type' => 'text_format',
+			'#format' => 'basic_html',
+			//'#allowed_formats' => ['basic_html', 'full_html'],
+			'#allowed_formats' => ['basic_html'],
 			'#rows'=> 7,
 			'#title' => t('Body e-mail'),
 			'#description' => t('Write here the body of the e-mail.').t('If you use [user:display-name] and [site:name] they will  be replaced by the appropriate values.'),
 			'#required'      => TRUE,
+		);
+				
+		$default_pos_group_mailinglist_footer_body_message = $config->get('pos_group_mailinglist_footer_body_message');
+		
+		$form['pos_group_mailinglist_footer_body_message'] = array(
+			//'#type' => 'textarea',
+			'#type' => 'text_format',
+			'#format' => 'basic_html',
+			//'#allowed_formats' => ['basic_html', 'full_html'],
+			'#allowed_formats' => ['basic_html'],
+			'#rows'=> 7,
+			'#title' => t('Footer text'),
+			'#description' => t('Write here the footer of the e-mail. It will be added in the body.').' '.t('If you use [site:name] it will  be replaced by the appropriate value.').' '.('This text will be stored to reuse it in the next e-mail.'),
+			'#required'      => TRUE,
+			'#default_value' => ($default_pos_group_mailinglist_footer_body_message),
 		);
 
 		$form['actions']['submit'] = array(
@@ -391,7 +409,13 @@ class pos_group_mailinglistForm extends ConfigFormBase {
 	public function submitForm(array &$form, FormStateInterface $form_state) {
 				
 		//drupal_set_message('------------TESTING-------------', 'error');
-				
+		$config = $this->config('pos_group_notifications.settings');
+		
+		$footerText = $form_state->getValue('pos_group_mailinglist_footer_body_message');
+		$footerText = $footerText['value'];	
+		$config->set('pos_group_mailinglist_footer_body_message', $footerText);
+		$config->save();
+		
 		$pos_selection_type_of_members = $form_state->getValue('pos_selection_type_of_members');
 		$finalUsersArray = array();
 		
@@ -530,9 +554,16 @@ class pos_group_mailinglistForm extends ConfigFormBase {
 		$keyEmail = 'pos_group_notifications_mailing_list'; 	
 		$subject_email = $form_state->getValue('pos_group_mailinglist_subject_message');
 		$original_body_email = $form_state->getValue('pos_group_mailinglist_body_message');
-		//if type = text_format uncomment next line
-		//$original_body_email = $original_body_email['value'];
+		//if we us a wysiwyw editor we need to read position 0
 		
+				
+		//if type = text_format we need to use this
+		$original_body_email = $original_body_email['value'];
+		//drupal_set_message("original_body_email:".$original_body_email);
+		
+		
+		//we add the footer text
+		$original_body_email .=	'<p> </p>'.$footerText;
 		
 		// access to the main site data
 		$system_site_config = \Drupal::config('system.site');
@@ -578,7 +609,9 @@ class pos_group_mailinglistForm extends ConfigFormBase {
 		$node = Node::create([
 			'type'        => 'pos_email_notification',
   			'title'       => $subject_email,
-  			'body'       => $body_email,
+  			//'body'       => $body_email,
+  			'langcode' => 'en',
+  			'body' => ['format' => 'basic_html', 'value' => $body_email],
   			'field_notification_recipients' => $finalListOfUsersToInsert
 		]);
 		$node->save();				

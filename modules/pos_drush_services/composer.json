@@ -1,0 +1,8 @@
+{
+  "name": "DRIVER-EU/pos_drush_services",
+  "type": "drupal-custom-module",
+  "description": "This module has been created to create a new drush command to enable us to add entities to a form steps",
+  "keywords": ["Drupal", "PoS", "drush"],
+  "license": "GPL-2.0+",
+  "require": { }
+}

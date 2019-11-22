@@ -9,6 +9,12 @@ use Drupal\user\Entity\User;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 
+function pos_user_registration_audit_update_projects_alter(&$projects) {
+  // Hide a site-specific module from the list.
+  unset($projects['pos_user_registration_audit']);
+}
+
+
 function pos_user_registration_audit_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
     case 'help.page.pos_user_registration_audit':
@@ -133,7 +139,7 @@ function pos_user_registration_audit_user_presave($account) {
 			drupal_set_message("---account created by a logged user, we don't need to cheek more things---");
 		}
 		else {
-			drupal_set_message("---account created by an anonymous user, we must check how we must create the new account---");
+			//drupal_set_message("---account created by an anonymous user, we must check how we must create the new account---");
 		
 			$config = \Drupal::config('user.settings');	
 			$typeOfRegistration = $config->get('register');
@@ -171,7 +177,7 @@ function pos_user_registration_audit_user_presave($account) {
 
 
 function pos_user_registration_audit_user_insert(Drupal\Core\Entity\EntityInterface $entity) {
-	drupal_set_message("*******---pos_user_registration_audit_user_insert---");
+	//drupal_set_message("*******---pos_user_registration_audit_user_insert---");
 	//foreach ($entity as $k=>$v) {
 	//	drupal_set_message("---k---".$k);
 	//}

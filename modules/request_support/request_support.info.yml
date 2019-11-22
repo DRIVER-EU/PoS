@@ -1,0 +1,11 @@
+name: Request support
+description: 'Adds functionality to requests support.'
+core: 8.x
+package: Custom
+
+type: module
+version: '8.x-1.1'
+project: 'request_support'
+
+dependencies:
+  - block

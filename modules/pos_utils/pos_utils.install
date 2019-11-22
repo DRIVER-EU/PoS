@@ -1,0 +1,11 @@
+<?php
+/*
+function pos_utils_update_8001() {
+  $repo = \Drupal::service('entity.last_installed_schema.repository');
+  $entity_type = $repo->getLastInstalledDefinition('file');
+  $keys = $entity_type->getKeys();
+  unset($keys['bundle']);
+  $entity_type->set('entity_keys', $keys);
+  $repo->setLastInstalledDefinition($entity_type);
+}
+*/

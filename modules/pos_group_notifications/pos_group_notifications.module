@@ -16,6 +16,11 @@ define('POS_HISTORY_READ_LIMIT', REQUEST_TIME - 30 * 24 * 60 * 60);
 
 use Drupal\Core\Routing\RouteMatchInterface;
 
+function pos_group_notifications_update_projects_alter(&$projects) {
+  // Hide a site-specific module from the list.
+  unset($projects['pos_group_notifications']);
+}
+
 function pos_group_notifications_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
     case 'help.page.pos_group_notifications':
@@ -130,7 +135,7 @@ use Drupal\Component\Utility\Html;
 /**
  * Implements hook_mail_alter().
  */
- 
+ /*
 function pos_group_notifications_mail_alter(&$message) {
 	//drupal_set_message('pos_group_notifications_mail_alter. message["id"]='.$message['id'].'----', 'error');
 	// only alter pos_group_notifications_pos_group_notifications_mailing_list forms
@@ -145,22 +150,395 @@ function pos_group_notifications_mail_alter(&$message) {
     }
   
 }
-
+*/
 
 function pos_group_notifications_mail($key, &$message, $params) {
 		
+	//drupal_set_message("---pos_group_notifications_mail---");
 	
 	$options = array(
 		'langcode' => $message['langcode'],
 	);
 
+	//drupal_set_message("---key---".$key);
 	switch ($key) {
 		case 'pos_group_notifications_mailing_list':
-			//drupal_set_message("---pos_group_notifications_mail---".$params['context']['message'], 'error');
+			//drupal_set_message("---pos_group_notifications_mail 1---".$params['context']['message'], 'error');
 			$message['from'] = \Drupal::config('system.site')->get('mail');
 	 		$message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed; delsp=yes';	 
+			$message['headers']['MIME-Version'] = '1.0';
      		$message['subject'] = $params['context']['subject'];
-     		$message['body'][] = $params['context']['message'];
+     		//$message['body'][] = '<html><body>'.$params['context']['message'].'</body></html>';
+			
+			/*=========store template in variable============*/
+			$site_name = \Drupal::config('system.site')->get('name');
+			global $base_url;
+			$host = $base_url;
+
+			//drupal_set_message("---host---".$host, 'error');
+
+			$replacedText = str_replace('src="/sites/default/', 'src="'.$host.'/sites/default/', $params['context']['message']);
+			//drupal_set_message("---pos_group_notifications_mail 2---".$replacedText, 'error');
+
+			$msg = '
+			<!doctype html><html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" dir="ltr"><head><!--[if gte mso 15]>
+			        <xml>
+			            <o:OfficeDocumentSettings>
+			                <o:AllowPNG/>
+			                <o:PixelsPerInch>96</o:PixelsPerInch>
+			            </o:OfficeDocumentSettings>
+			        </xml>
+			        <![endif]-->
+					<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+					<title>PoS notification</title>       
+			        <meta http-equiv="x-ua-compatible" content="IE=edge">
+			        <meta name="viewport" content="width=device-width, initial-scale=1">
+			        <meta name="description" content="PoS Notification">
+			        <meta name="keywords" content="PoS Notification">        
+			    	<style type="text/css">
+					body{
+						font:14px/20px Helvetica, Arial, sans-serif;
+						margin:0;
+						padding:75px 0 0 0;
+						text-align:center;
+						-webkit-text-size-adjust:none;
+					}
+					p{
+						padding:0 0 10px 0;
+					}
+					h1 img{
+						max-width:100%;
+						height:auto !important;
+						vertical-align:bottom;
+					}
+					h2{
+						font-size:22px;
+						line-height:28px;
+						margin:0 0 12px 0;
+					}
+					h3{
+						margin:0 0 12px 0;
+					}
+					.headerBar{
+						background:none;
+						padding:0;
+						border:none;
+					}
+					.wrapper{
+						width:600px;
+						margin:0 auto 10px auto;
+						text-align:left;
+					}
+					input.formEmailButton{
+						border:none !important;
+					}
+					.formEmailButton{
+						display:inline-block;
+						font-weight:500;
+						font-size:16px;
+						line-height:42px;
+						font-family:Helvetica, Arial, sans-serif;
+						width:auto;
+						white-space:nowrap;
+						height:42px;
+						margin:12px 5px 12px 0;
+						padding:0 22px;
+						text-decoration:none;
+						text-align:center;
+						cursor:pointer;
+						border:0;
+						border-radius:3px;
+						vertical-align:top;
+					}
+					.formEmailButton span{
+						display:inline;
+						font-family:Helvetica, Arial, sans-serif;
+						text-decoration:none;
+						font-weight:500;
+						font-style:normal;
+						font-size:16px;
+						line-height:42px;
+						cursor:pointer;
+						border:none;
+					}
+					.rounded6{
+						border-radius:6px;
+					}
+					.poweredWrapper{
+						padding:20px 0;
+						width:560px;
+						margin:0 auto;
+					}
+					.poweredBy{
+						display:block;
+					}
+					span.or{
+						display:inline-block;
+						height:32px;
+						line-height:32px;
+						padding:0 5px;
+						margin:5px 5px 0 0;
+					}
+					.clear{
+						clear:both;
+					}
+					.profile-list{
+						display:block;
+						margin:15px 20px;
+						padding:0;
+						list-style:none;
+						border-top:1px solid #eee;
+					}
+					.profile-list li{
+						display:block;
+						margin:0;
+						padding:5px 0;
+						border-bottom:1px solid #eee;
+					}
+					html[dir=rtl] .wrapper,html[dir=rtl] .container,html[dir=rtl] label{
+						text-align:right !important;
+					}
+					html[dir=rtl] ul.interestgroup_field label{
+						padding:0;
+					}
+					html[dir=rtl] ul.interestgroup_field input{
+						margin-left:5px;
+					}
+					html[dir=rtl] .hidden-from-view{
+						right:-5000px;
+						left:auto;
+					}
+					body,#bodyTable{
+						background-color:#00497E;
+					}
+					h1{
+						font-size:28px;
+						line-height:110%;
+						margin-bottom:30px;
+						margin-top:0;
+						padding:0;
+					}
+					#templateContainer{
+						background-color:none;
+					}
+					#templateBody{
+						background-color:#ffffff;
+					}
+					.bodyContent{
+						line-height:150%;
+						font-family:Helvetica;
+						font-size:14px;
+						color:#333333;
+						padding:20px;
+					}
+					a:link,a:active,a:visited,a{
+						color:#336699;
+					}
+					.formEmailButton:link,.formEmailButton:active,.formEmailButton:visited,.formEmailButton,.formEmailButton span{
+						background-color:#5d5d5d !important;
+						color:#ffffff !important;
+					}
+					.formEmailButton:hover{
+						background-color:#444444 !important;
+						color:#ffffff !important;
+					}
+					label{
+						line-height:150%;
+						font-family:Helvetica;
+						font-size:16px;
+						color:#5d5d5d;
+					}
+					.field-group input,select,textarea,.dijitInputField{
+						font-family:Helvetica;
+						color:#5d5d5d !important;
+					}
+					.asterisk{
+						color:#cc6600;
+						font-size:20px;
+					}
+					label .asterisk{
+						visibility:hidden;
+					}
+					.indicates-required{
+						display:none;
+					}
+					.field-help{
+						color:#777;
+					}
+					.error,.errorText{
+						color:#e85c41;
+						font-weight:bold;
+					}
+				@media (max-width: 620px){
+					body{
+						width:100%;
+						-webkit-font-smoothing:antialiased;
+						padding:10px 0 0 0 !important;
+						min-width:300px !important;
+					}
+			
+			}	@media (max-width: 620px){
+					.wrapper,.poweredWrapper{
+						width:auto !important;
+						max-width:600px !important;
+						padding:0 10px;
+					}
+			
+			}	@media (max-width: 620px){
+					#templateContainer,#templateBody,#templateContainer table{
+						width:100% !important;
+						-moz-box-sizing:border-box;
+						-webkit-box-sizing:border-box;
+						box-sizing:border-box;
+					}
+			
+			}	@media (max-width: 620px){
+					.addressfield span{
+						width:auto;
+						float:none;
+						padding-right:0;
+					}
+			
+			}	@media (max-width: 620px){
+					.captcha{
+						width:auto;
+						float:none;
+					}
+			
+			}		.gdpr-mergeRow{
+						margin:10px 0;
+						color:#4a4a4a;
+						font-family:Helvetica;
+					}
+					.gdpr-content{
+						margin:0 -20px 0 -20px;
+						padding:20px;
+						background:rgba(255, 255, 255, 0.8);
+					}
+					#gdpr-label{
+						margin-top:0;
+					}
+					#gdpr-description{
+						margin-top:6px;
+						margin-bottom:0;
+						padding-bottom:11px;
+					}
+					.gdpr-content p{
+						color:#4a4a4a;
+						font-size:13px;
+						line-height:1.5;
+					}
+					.gdpr-content .checkbox-group label{
+						font-weight:normal;
+						font-size:13px;
+					}
+					#gdpr-legal{
+						padding-top:20px;
+						margin:0;
+					}
+					.gdpr-footer{
+						margin:0 -20px 0 -20px;
+						padding:20px;
+						background:rgba(255, 255, 255, 0.9);
+						overflow:auto;
+						color:#6d6d6d;
+					}
+					.gdpr-footer p{
+						font-size:10px;
+						line-height:1.5;
+						margin-bottom:0;
+					}
+					.gdpr-footer a{
+						color:#206578;
+					}
+					.gdpr-footer img{
+						width:65px;
+						float:left;
+						margin-right:15px;
+					}
+			</style></head>
+			    <body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0" style="font: 14px/20px Helvetica, Arial, sans-serif;margin: 0;padding: 75px 0 0 0;text-align: center;-webkit-text-size-adjust: none;background-color: #00497E;">
+			    	<center>
+			        	<table border="0" cellpadding="20" cellspacing="0" height="100%" width="100%" id="bodyTable" style="background-color: #00497E;">
+			            	<tr>
+			                	<td align="center" valign="top">
+			                    	<!-- // BEGIN CONTAINER -->
+			                        <!--[if gte mso 9]>
+			                        <table align="center" border="0" cellspacing="0" cellpadding="0" width="600" style="width:600px;">
+			                        <tr>
+			                        <td align="center" valign="top" width="600" style="width:600px;">
+			                        <![endif]-->
+			                        <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;border-radius: 6px;background-color: none;" id="templateContainer" class="rounded6">
+			                        	<tr>
+			                            	<td align="center" valign="top">
+			                                	<!-- // BEGIN HEADER -->
+			                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width:600px">
+			                                    	<tr>
+			                                        	<td>
+			                                            	<h1 style="font-size: 28px;line-height: 110%;margin-bottom: 30px;margin-top: 0;padding: 0;">
+			                                            	<span style="color:#FDB913">
+			                                            	'.$site_name.'
+			                                            	</span>
+			                                            	</h1>
+			                                            </td>
+			                                        </tr>
+			                                    </table>
+			                                	<!-- END HEADER \\ -->
+			                                </td>
+			                            </tr>
+			                        	<tr>
+			                            	<td align="center" valign="top">
+			                                	<!-- // BEGIN BODY -->
+			                                	<table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 600px;border-radius: 6px;background-color: #ffffff;" id="templateBody" class="rounded6">
+			                                    	<tr>                                            
+			                                            <td align="left" valign="top" class="bodyContent" style="line-height: 150%;font-family: Helvetica;font-size: 14px;color: #333333;padding: 20px;">
+			                                                
+			                                                <div id="contentEmail" class="contentBox">
+																<p style="padding: 0 0 10px 0;">
+																	'.$replacedText.'
+																</p>
+															</div>
+			                                            </td>                                            
+			                                        </tr>
+			                                    </table>
+			                                    <!-- END BODY \\ -->
+			                                </td>
+			                            </tr>
+			                        	<tr>
+			                            	<td align="center" valign="top">
+			                                	<!-- // BEGIN FOOTER -->
+			                                	<table border="0" cellpadding="20" cellspacing="0" width="100%" style="max-width:600px">
+			                                    	<tr>
+			                                        	<td align="center" valign="top">                                                
+			                                                <div>
+			                                                    <span class="poweredBy" style="display: block;">
+			                                                    	<a href="'.$host.'" style="color: #336699;">
+			                                                    		<img src="'.$host.'/themes/reboot/driver-logo.png" width="139" height="54">
+			                                                    	</a>
+			                                                    </span>
+			                                                </div>                                                
+			                                            </td>
+			                                        </tr>
+			                                    </table>
+			                                    <!-- END FOOTER \\ -->
+			                                </td>
+			                            </tr>
+			                        </table>
+			                        <!--[if gte mso 9]>
+			                        </td>
+			                        </tr>
+			                        </table>
+			                        <![endif]-->
+			                        <!-- END CONTAINER \\ -->
+			                    </td>
+			                </tr>
+			            </table>
+			        </center>
+			   </body>
+			</html>
+			';
+			
+			$message['body'][] = $msg;
 			
 			//$message['body'][] = \Drupal::service('renderer')->render($params['context']['message']);
 			//$message['body'][] = render($params['context']['message']);
@@ -168,6 +546,15 @@ function pos_group_notifications_mail($key, &$message, $params) {
 			//$message['message'][] = $params['context']['message'];
 						
       		break;
+		default:
+			//drupal_set_message("---pos_group_notifications_mail 1---".$params['context']['message'], 'error');
+			$message['from'] = \Drupal::config('system.site')->get('mail');
+	 		$message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed; delsp=yes';	 
+			$message['headers']['MIME-Version'] = '1.0';
+     		$message['subject'] = $params['context']['subject'];
+			$message['body'][] = '<html><body>'.$params['context']['message'].'</body></html>';
+			
+			break;
   		}
 	
 }
@@ -178,98 +565,129 @@ function pos_send_custom_email($to, $subject_email, $body_email, $key) {
 	if ($to) {
 		//checking if the user has enabled the checkbox to receive emails notifications,  we recover user data by user email
 		$userByEmailData = user_load_by_mail($to);
+		
+		//we must check the current status of the user. BLocked user don't receive emails
+		
+		$isUserActive = $userByEmailData->isActive();
+		//drupal_set_message("to:".$to."--isUserActive:".(string) $isUserActive);
+		
 		$name= $userByEmailData->getUsername();
 		$checkboxAcceptNotifications = 0;
 		//$checkboxAcceptNotifications = $userByEmailData->get('field_accept_group_noti_by_email')->value;	
 		$checkboxAcceptNotifications = $userByEmailData->get('field_accept_email_notifications')->value;
-	
-		if ($checkboxAcceptNotifications==1) {		
-					
-			$config =  \Drupal::config('pos_group_notifications.settings');  // get saved settings
-			$pos_group_notifications_testing_mode = $config->get('pos_group_notifications_testing_mode'); 
-			$pos_group_notifications_primary_email = $config->get('pos_group_notifications_primary_email');
-	
-			if ($pos_group_notifications_testing_mode==True) {
-				$to_email = $pos_group_notifications_primary_email;
-			}
-			else {
-				$to_email = $to;
-			}
 		
-			$mailManager = \Drupal::service('plugin.manager.mail');
-			$module = 'pos_group_notifications';
-			//$key = 'pos_group_notifications_request_publication'; // Replace with Your key
-		
-			//$langcode = \Drupal::currentUser()->getPreferredLangcode();
-			$langcode = 'en';
-		  	$send = true;
-		
-			$params['context']['message'] = $body_email;
-			$params['context']['subject'] = $subject_email;	
-		
-			//$params['options']['username'] = 'mimimi';
-			//$params['options']['title'] = t('Your wonderful title');
-			//$params['options']['footer'] = t('Your wonderful footer');
-								
-			//$result = $mailManager->mail($module, $key, $to_email, $langcode, $params, NULL, $send);
-			
-			//drupal_set_message("to:".$to_email, 'error');
-			//drupal_set_message("langcode:".$langcode, 'error');
-			//drupal_set_message("subject:".$subject_email, 'error');
-			//drupal_set_message("body:".$body_email, 'error');
-			
-			$errorREcoverInCath = "";
-			try {
-				/*
-				if ($key=='pos_group_notifications_mailing_list') {
-					$result = $mailManager->mail($module, $key, $to_email, $langcode, $params, NULL, $send);	
-				}
-				else {
-					$result = $mailManager->mail('system', 'mail', $to_email, $langcode, $params, NULL, $send);
-				}
-				*/
-				$result = $mailManager->mail('system', 'mail', $to_email, $langcode, $params, NULL, $send);
+		$config =  \Drupal::config('pos_group_notifications.settings');  // get saved settings
+		$pos_group_notifications_testing_mode = $config->get('pos_group_notifications_testing_mode'); 
+		$pos_group_notifications_primary_email = $config->get('pos_group_notifications_primary_email');
+
+		if ($pos_group_notifications_testing_mode==True) {
+			$to_email = $pos_group_notifications_primary_email;
+		}
+		else {
+			$to_email = $to;
+		}
 				
-				//
-				//$result = $mailManager->mail($module, 'pos_group_notifications_mailing_list', $to_email, $langcode, $params, NULL, $send);
-				
+		if ($isUserActive) {
+			if ($checkboxAcceptNotifications==1) {		
+						
 			
-				//drupal_set_message("after send email", 'error');
-			} catch (Exception $e) {
-		    	//echo 'Caught exception: ',  $e->getMessage(), "\n";
-				//drupal_set_message("after send email cath: ".$e->getMessage(), 'error');
-				$errorREcoverInCath = $e->getMessage();
-				$result['result'] = false;
-			}
-			//$mailManager->mail($module, $key, $to_email, 'en', $params, $reply = NULL, $send = TRUE);
+				$mailManager = \Drupal::service('plugin.manager.mail');
+				$module = 'pos_group_notifications';
+				//$key = 'pos_group_notifications_request_publication'; // Replace with Your key
 			
+				//$langcode = \Drupal::currentUser()->getPreferredLangcode();
+				$langcode = 'en';
+			  	$send = true;
 			
-			if ($result['result'] != true) {
-										
-				$extra_text = '-key='.$key.'-</br>-Executed in testing mode:';
-				if ($pos_group_notifications_testing_mode==1) {
-					$extra_text .= " ON";
-				}
-				else {
-					$extra_text .= " OFF";
-				}
-				$extra_text .= "</br>";
-				$extra_text .= '</br>-To:'.$to_email." </br>-Subject:".$subject_email."</br>-Body:</br>".$body_email;
+				$params['context']['message'] = $body_email;
+				$params['context']['subject'] = $subject_email;	
+			
+				//$params['options']['username'] = 'mimimi';
+				//$params['options']['title'] = t('Your wonderful title');
+				//$params['options']['footer'] = t('Your wonderful footer');
 									
-				$message = t('There was a problem sending the email notification to @email.', array('@email' => $to_email));
+				//$result = $mailManager->mail($module, $key, $to_email, $langcode, $params, NULL, $send);
 				
-				if ($errorREcoverInCath!="") {
-					$message .= "</br>".$errorREcoverInCath;
+				//drupal_set_message("to:".$to_email, 'error');
+				//drupal_set_message("langcode:".$langcode, 'error');
+				//drupal_set_message("subject:".$subject_email, 'error');
+				//drupal_set_message("body:".$body_email, 'error');
+				
+				$errorREcoverInCath = "";
+				try {
+					/*
+					if ($key=='pos_group_notifications_mailing_list') {
+						$result = $mailManager->mail($module, $key, $to_email, $langcode, $params, NULL, $send);	
+					}
+					else {
+						$result = $mailManager->mail('system', 'mail', $to_email, $langcode, $params, NULL, $send);
+					}
+					*/
+					
+					if ($key=='pos_group_notifications_mailing_list') {
+						//send emails in HTML format
+						$result = $mailManager->mail('pos_group_notifications', $key, $to_email, $langcode, $params, NULL, $send);	
+					}
+					else {
+						$result = $mailManager->mail('system', 'mail', $to_email, $langcode, $params, NULL, $send);
+					}
+					
+					
+					
+					
+					//
+					//$result = $mailManager->mail($module, 'pos_group_notifications_mailing_list', $to_email, $langcode, $params, NULL, $send);
+					
+				
+					//drupal_set_message("after send email", 'error');
+				} catch (Exception $e) {
+			    	//echo 'Caught exception: ',  $e->getMessage(), "\n";
+					//drupal_set_message("after send email cath: ".$e->getMessage(), 'error');
+					$errorREcoverInCath = $e->getMessage();
+					$result['result'] = false;
 				}
-							
-				$message .= "</br>".$extra_text;
+				//$mailManager->mail($module, $key, $to_email, 'en', $params, $reply = NULL, $send = TRUE);
 				
-				$message = str_replace("\n", "</br>", $message);
 				
-				\Drupal::logger('pos_group_notifications')->error($message);
-		
+				if ($result['result'] != true) {
+											
+					$extra_text = '-key='.$key.'-</br>-Executed in testing mode:';
+					if ($pos_group_notifications_testing_mode==1) {
+						$extra_text .= " ON";
+					}
+					else {
+						$extra_text .= " OFF";
+					}
+					$extra_text .= "</br>";
+					$extra_text .= '</br>-To:'.$to_email." </br>-Subject:".$subject_email."</br>-Body:</br>".$body_email;
+										
+					$message = t('There was a problem sending the email notification to @email.', array('@email' => $to_email));
+					
+					if ($errorREcoverInCath!="") {
+						$message .= "</br>".$errorREcoverInCath;
+					}
+								
+					$message .= "</br>".$extra_text;
+					
+					$message = str_replace("\n", "</br>", $message);
+					
+					\Drupal::logger('pos_group_notifications')->error($message);
+			
+				}
+			
 			}
-		
+		}
+		else {
+			$message = "The user with email ".$to." (".$name.") is bloked. We cannot send any email";
+			
+			if ($pos_group_notifications_testing_mode==1) {
+				$message .= "</br>";
+				$message .= '-key='.$key.'-</br>-Executed in testing mode:';
+			}
+
+			$message .= "</br>";
+			$message .= '</br>-To:'.$to_email." </br>-Subject:".$subject_email."</br>-Body:</br>".$body_email;
+			\Drupal::logger('pos_group_notifications')->error($message);
 		}
 	}
 }
@@ -295,6 +713,14 @@ function pos_group_notification_request_publication(array $form, FormStateInterf
 		$previous_field_publish_value = $new_field_publish_value;
 	}
 
+	$field_qa_approved = 0;		
+	if (array_key_exists('field_qa_approved', $form)) {
+		$field_qa_approved = $form_state->getValue('field_qa_approved');		
+		$field_qa_approved = $field_qa_approved['value'];
+	}
+	//if $field_qa_approved == 0 -> reject
+	//if $field_qa_approved == 1 -> accept
+		
     //drupal_set_message("-previous_field_publish_value value ->".$previous_field_publish_value."<---", 'error');
 	//drupal_set_message("-new_field_publish_value value ->".$new_field_publish_value."<---", 'error');
 
@@ -304,8 +730,11 @@ function pos_group_notification_request_publication(array $form, FormStateInterf
 	$entity = $form_state->getFormObject()->getEntity();
 	
 	$sendEmail = False;
-	if (($previous_field_publish_value==0) && ($new_field_publish_value==1)) {
-		$sendEmail = True;
+	//Used when user changes the “approval requested” to true and qa approved is false.
+	if ($field_qa_approved == 0) {
+		if (($previous_field_publish_value==0) && ($new_field_publish_value==1)) {
+			$sendEmail = True;
+		}
 	}
 	
 	//$sendEmail = True;
@@ -350,6 +779,135 @@ function pos_group_notification_request_publication(array $form, FormStateInterf
 		$group_members = pos_group_notifications_get_list_of_members_by_role_name($pos_group_notifications_request_publication_role_to_notify);
 
 		$key = 'pos_group_notifications_request_publication';
+
+		foreach ($group_members as $user) {
+    		//$user = $member->getUser();
+			
+			$uid = $user->get('uid')->value;
+    		$realname = $user->get('field_real_name')->value;
+			$mail = $user->get('mail')->value;
+			
+			//drupal_set_message("--uid-->".$uid."<---realname-->".$realname."<---", 'error');
+    				
+			//$usersToSenNotification[] = array("uid"=>$uid, "mail"=> $mail, "realname" => $realname );
+			
+			//$body_email = "send an email to--uid-->".$uid."<---realname-->".$realname."<---email-->".$mail."<---";
+			$body_email = $pos_group_notifications_request_publication_body;
+			
+			$body_email = str_replace("[user:display-name]", $realname, $body_email);
+			$body_email = str_replace("[site:name]", $site_name, $body_email);
+			$body_email = str_replace("[editor:name]", $current_user_name, $body_email);
+			
+			$body_email = str_replace("[group:name]", $group_name, $body_email);
+			//$body_email= str_replace("\n", "</br>", $body_email);
+			
+			$body_email  = html_entity_decode( $body_email);
+			$body_email = render($body_email);
+			
+			//drupal_set_message("send an email to--uid-->".$uid."<---realname-->".$realname."<---email-->".$mail."<---", 'error');
+			//I'm not to send an email to me
+			//if ($current_uid!=$uid) {
+				//drupal_set_message("send an email to--uid-->".$uid."<---realname-->".$realname."<---email-->".$mail."<---", 'error');
+				pos_send_custom_email($mail, $subject_email, $body_email, $key);	
+			//}
+					
+        }
+	}
+	//else {
+	//	drupal_set_message("-sending email false<---", 'error');
+	//}
+	
+	//drupal_set_message("Out pos_group_notification_request_publication!!!", 'error');
+	return true;	
+}
+
+
+//function that checks if the publication message email need to be sended, and send it
+function pos_group_notification_published_group(array $form, FormStateInterface $form_state) {
+	//drupal_set_message("IN pos_group_notification_request_publication!!!", 'error');
+	
+    $pos_field_publish_previous_status = $form_state->getValue('pos_field_publish_previous_status');
+
+	if (array_key_exists('field_publish', $form)) {
+		$new_field_publish_value = $form_state->getValue('field_publish');		
+		$new_field_publish_value = $new_field_publish_value['value'];
+	}
+
+	if (array_key_exists('pos_field_publish_previous_status', $form)) {
+		$previous_field_publish_value = $form_state->getValue('pos_field_publish_previous_status');
+		//drupal_set_message("IN --previous_field_publish_value:".$previous_field_publish_value."<---", 'error');
+		//$previous_field_publish_value = $previous_field_publish_value['value'];		
+	}
+	else {
+		$previous_field_publish_value = $new_field_publish_value;
+	}
+
+	$field_qa_approved = 0;		
+	if (array_key_exists('field_qa_approved', $form)) {
+		$field_qa_approved = $form_state->getValue('field_qa_approved');		
+		$field_qa_approved = $field_qa_approved['value'];
+	}
+	//if $field_qa_approved == 0 -> reject
+	//if $field_qa_approved == 1 -> accept
+		
+    //drupal_set_message("-previous_field_publish_value value ->".$previous_field_publish_value."<---", 'error');
+	//drupal_set_message("-new_field_publish_value value ->".$new_field_publish_value."<---", 'error');
+
+	//send an email if:
+	// * after update a group and field_publish change from 0 to 1
+	
+	$entity = $form_state->getFormObject()->getEntity();
+	
+	$sendEmail = False;
+	//Used when user changes the “approval requested” to true and qa approved is true.
+	if ($field_qa_approved == 1) {
+		if (($previous_field_publish_value==0) && ($new_field_publish_value==1)) {
+			$sendEmail = True;
+		}
+	}
+	
+	//$sendEmail = True;
+	
+	//drupal_set_message("-change condition to send email<---", 'error');
+	if ($sendEmail==True) {
+		//drupal_set_message("-sending email true<---", 'error');
+		
+		$config =  \Drupal::config('pos_group_notifications.settings');
+		$pos_group_notifications_request_publication_subject = $config->get('pos_group_notifications_publication_subject');
+		$pos_group_notifications_request_publication_body = $config->get('pos_group_notifications_publication_body');
+
+		global $base_url;
+		$host = $base_url;
+
+		// access to the main site data
+		$system_site_config = \Drupal::config('system.site');
+ 		$site_email = $system_site_config->get('mail');
+		$site_name = $system_site_config->get('name');
+		
+		$subject_email = str_replace("[site:name]", $site_name, $pos_group_notifications_request_publication_subject);
+
+		$current_uid = \Drupal::currentUser()->id();
+		 		
+		$current_user = User::load($current_uid);
+		
+		$current_user_name = $current_user->get('field_real_name')->value;
+				
+		$gid = $entity->id[0]->value;
+		$group = Drupal\group\Entity\Group::load($gid);	
+				
+		$group_name = $form_state->getValue('label');
+		$group_name = $group_name[0]['value'];
+		
+		$group_name ="<a href='".$host."/group/".$gid."'>".$group_name."</a>";
+		
+		//The list of members to notify are the ones that belong to the uid configured in pos_group_notifications_request_publication_role_to_notify
+		//$group_members = $group->getMembers();
+		//
+		$pos_group_notifications_request_publication_role_to_notify = $config->get('pos_group_notifications_request_publication_role_to_notify');
+		//drupal_set_message("-gid-->".$pos_group_notifications_request_publication_role_to_notify."<---", 'error');
+		$group_members = pos_group_notifications_get_list_of_members_by_role_name($pos_group_notifications_request_publication_role_to_notify);
+
+		$key = 'pos_group_notifications_published_group';
 
 		foreach ($group_members as $user) {
     		//$user = $member->getUser();
@@ -665,6 +1223,9 @@ function pos_group_notifications_submit_group_form(array $form, FormStateInterfa
 	//function that checks if the request_publication email need to be sended, and send it
 	$result = pos_group_notification_request_publication($form, $form_state);
 	
+	//function that checks if the published group email need to be sended, and send it
+	$result = pos_group_notification_published_group($form, $form_state);
+	
 	//function that checks if the reject or the accept email needs to be sended, and send it
 	$result = pos_group_notification_accept_reject($form, $form_state);
 	
@@ -919,6 +1480,13 @@ function pos_group_notifications_start_cron_tasks() {
 			
 			$result = pos_group_notifications_send_emails('reminder');
 			
+			//check if the validation group emaul must be sended
+			$pos_group_notifications_group_validation_error_enabled = $config->get('pos_group_notifications_group_validation_error_enabled');
+			if ($pos_group_notifications_group_validation_error_enabled==1) {
+				//drupal_set_message("***----".rand(1, 150)."--pos_group_notifications_cron pos_group_notifications_group_validation_error_enabled is enabled!!!!!!!--", 'error');
+				$result = pos_group_notifications_send_emails_groups_with_validation_errors();	
+			}
+			
 			$config->set('pos_group_notifications_last_reminder_execution', $today_date);
 			$config->save();		
 			
@@ -962,7 +1530,14 @@ function pos_group_notifications_start_cron_tasks() {
 	//drupal_set_message("***----".rand(1, 150)."--pos_group_notifications_cron 2 A--", 'error');
 	$result = pos_group_notifications_send_emails_qa_groups_not_empty();
 	//drupal_set_message("***----".rand(1, 150)."--pos_group_notifications_cron 2 B--", 'error');
+	
+	//drupal_set_message("***----".rand(1, 150)."--pos_group_notifications_cron pos_group_notifications_group_validation_error_enabled A--", 'error');
+	
+	//drupal_set_message("***----".rand(1, 150)."--pos_group_notifications_cron pos_group_notifications_group_validation_error_enabled B--", 'error');
 
+	
+	//drupal_set_message("***----".rand(1, 150)."--pos_group_notifications_cron pos_group_notifications_group_validation_error_enabled C--", 'error');	
+	
 	//drupal_set_message("***----".rand(1, 150)."--hola 2--pos_group_notifications_start_cron_tasks", 'error');
 }
 
@@ -982,6 +1557,286 @@ function pos_group_notifications_get_list_of_members_by_role_name($role_name) {
 	return $users;
 }
 
+
+function pos_getListGroupsByUser($user) {
+
+	$dataToReturn = array();	
+	$dataToReturnByGroup = array();
+	$uid = $user->get('uid')->value;
+	$mail = $user->get('mail')->value;
+	$name = $user->get('name')->value;
+	$realname = $user->get('field_real_name')->value;
+	
+	//drupal_set_message("pos_getListGroupsByUser uid:".$uid, 'error');
+	
+	$login = $user->get('login')->value;
+	$access = $user->get('access')->value;
+	
+	$data = 'uid:'.$uid.'---mail:'.$mail.'----realname:'.$realname.'----name:'.$name.'-----login:'.$login.'----last access:'.$access.'---';
+
+	$grp_membership_service = \Drupal::service('group.membership_loader');
+	$grps = $grp_membership_service->loadByUser($user);
+    
+	$urolesMemberList = array();
+	
+	foreach ($grps as $grp) {
+		$goupData = $grp->getGroup();
+		
+		$gtype = "";
+					
+		$urolesMemberList = array();
+		
+		$gtype=$goupData->type[0]->target_id;
+		
+		//drupal_set_message("***....uid:".$uid."-------gid=".$goupData->id()."---label-->".$goupData->label()."<----type-->".$gtype."<----", 'error');
+		
+		$members = $goupData->getMembers();
+
+		$urolesMemberList =[];
+		
+		foreach ($members as $member) {
+			$userMember = $member->getUser();
+			$uidMember = $userMember->get('uid')->value;
+			if ($uid==$uidMember) {
+				//drupal_set_message("Same user uid:".$uid."---uidMember:".$uidMember, 'error');
+				$urolesMember = $member->getRoles();	
+				
+				foreach ($urolesMember as $roleK => $roleV) {
+					//drupal_set_message("user role roleK-->".$roleK."<---roleV-->".print_r($roleV,true)."<---uidMember:".$uidMember, 'error');
+					//drupal_set_message("user role roleK-->".$roleK."<------uidMember:".$uidMember, 'error');
+					$urolesMemberList[] = $roleK;
+				}
+				
+			}			
+		}
+			
+		//drupal_set_message("***uid:".$uid."-------gid=".$goupData->id()."-------uuid=---".$goupData->uuid()."------label=---".$goupData->label()."----sizeof:".sizeof($urolesMemberList), 'error');		
+		$dataToReturnByGroup[] = array("gid" => $goupData->id(), "glabel" => $goupData->label(), "gtype" => $gtype, "roles" => $urolesMemberList);
+
+
+     }	
+     
+	 if (sizeof($dataToReturnByGroup)>0){
+	 	$dataToReturn = array("uid"=>$uid, "mail"=> $mail, "realname" => $realname, "dataByGroup" => $dataToReturnByGroup );
+	 }
+     return $dataToReturn;
+}
+
+
+function pos_group_notifications_send_emails_groups_with_validation_errors() {
+	//drupal_set_message('pos_group_notifications_send_emails_groups_with_validation_errors', 'error');
+	//select all users
+	//get all their groups that belong to the group type enabled
+	//check if user has the appropiate role
+	//check if group has some validation error
+	$ids = \Drupal::entityQuery('user')
+		->condition('status', 1)  
+		->execute();
+
+	$users = User::loadMultiple($ids);
+	$config =  \Drupal::config('pos_group_notifications.settings');  // get saved settings	
+
+	// access to the main site data
+	$system_site_config = \Drupal::config('system.site');
+	$site_name = $system_site_config->get('name');	
+	
+	global $base_url;
+	$host = $base_url;
+		
+	$semaforo = 0;
+	foreach($users as $user){
+		//recover data per user (their groups and the latest nodes)
+		//if ($semaforo<30) {
+			$dataToProcess[] = pos_getListGroupsByUser($user);
+			$semaforo = $semaforo + 1;
+		//}
+	}
+	
+	foreach($dataToProcess as $data){
+		//each row has the data per a user
+		if (array_key_exists('uid', $data)) {
+			//drupal_set_message('uid--->'.$data['uid']."---", 'error');
+			//drupal_set_message('realname--->'.$data['realname']."---", 'error');
+			//drupal_set_message('mail--->'.$data['mail']."---", 'error');
+			
+			//drupal_set_message($data['uid'].'-sizeof 0--->'.sizeof($data['ugroles'])."---", 'error');
+			
+			//drupal_set_message($data['uid'].'-sizeof 1--->'.sizeof($data['dataByGroup'])."---", 'error');
+			//drupal_set_message($data['uid'].'-sizeof 2--->'.sizeof($data['dataByGroup']['roles'])."---", 'error');
+			
+			//foreach ($data['ugroles'] as $k1 => $v1) {
+			//	drupal_set_message($data['gid'].'--k1--->'.$k1."---".$v1, 'error');
+			//}
+			
+			$arrayGroupsToBuild = array();
+			
+			
+			foreach($data['dataByGroup'] as $dataGroup) {
+				//in each row we have the data of the user groups
+				$enambledGroups = $config->get('pos_group_notifications_group_validation_configgroups');
+								
+				//drupal_set_message($data['uid'].'-sizeof 33 roles of the user in this group--->'.sizeof($dataGroup['roles'])."---", 'error');
+				//only if the user belong to one of the selected roles into the config must receive an email
+								
+				//drupal_set_message($dataGroup['gid']."--".$dataGroup['gtype'], 'error');
+				//foreach($enambledGroups as $k=>$v) {
+				//	drupal_set_message($dataGroup['gid']."--enambledGroups---".$k."--".$v, 'error');
+				//}
+				
+				if (array_key_exists($dataGroup['gtype'], $enambledGroups)) {
+    				//grup type in array, let's check is is enabled
+    				//drupal_set_message($dataGroup['gid']." --- DINS 1!!!", 'error');
+    				//drupal_set_message($dataGroup['gid']."--".$config->get('pos_group_notifications_group_validation_configgroups')[$dataGroup['gtype']]['group'],'error');
+					
+					$defaultValueCheckboxes = array();
+					foreach ($config->get('pos_group_notifications_group_validation_configgroups')[$dataGroup['gtype']]['rolesbygroup'] as $k_item=> $v_item) {
+						if ($k_item===$v_item) {				
+							array_push($defaultValueCheckboxes, $v_item);
+							//drupal_set_message('uid:'.$data['uid'].'-gid:'.$dataGroup['gid'].'- role selected in group type ->'.$dataGroup['gtype'].'<--->'.$v_item.'<----------','error');
+						}
+					}
+					
+					
+					//drupal_set_message($data['uid'].'- number of roles selected in this group type ->'.$dataGroup['gtype'].'<--->'.sizeof($defaultValueCheckboxes)."---", 'error');
+					
+    				if ($config->get('pos_group_notifications_group_validation_configgroups')[$dataGroup['gtype']]['group']==1) {
+    					//This group an be processed.
+    					//drupal_set_message($dataGroup['gid']." --- DINS 2!!!--".$dataGroup['gtype'], 'error');
+						//drupal_set_message('.....uid--->'.$data['uid'].'---gid--->'.$dataGroup['gid']."--glabel--->".$dataGroup['glabel']."--gtype--->".$dataGroup['gtype']."---roles-->".print_r($dataGroup['roles'],true)."<---", 'error');
+						
+						
+						$userHasRoleInThisGroup = False;
+						foreach ($dataGroup['roles'] as $rk=> $rv) {
+							//drupal_set_message('uid:'.$data['uid'].'-gid:'.$dataGroup['gid'].'-****users roles --->'.(string) $rk.'<-->'.(string) $rv.'<---','error');
+							
+							foreach ($config->get('pos_group_notifications_group_validation_configgroups')[$dataGroup['gtype']]['rolesbygroup'] as $k_item=> $v_item) {
+								if ($k_item===$v_item) {
+									
+									
+									$pos = strpos(strtolower($rv), strtolower($v_item));
+	
+									if ($pos === false) {
+									}
+									else {
+										$userHasRoleInThisGroup = True;
+									}
+									
+									//drupal_set_message('uid:'.$data['uid'].'-gid:'.$dataGroup['gid'].'-****v_item --->'.(string) $v_item.'<-----rv---->'.(string) $rv.'<---pos:'.(string) $pos."<---",'error');
+								}
+								
+							}
+						}
+						if (!$userHasRoleInThisGroup) {
+							//user without valid role for this group
+							//drupal_set_message('uid:'.$data['uid'].'-gid:'.$dataGroup['gid'].'-****Use not in the list of valid roles of the  group<---','error');
+						}
+						else {
+							//user has some valid role for this group
+							//drupal_set_message('uid:'.$data['uid'].'-gid:'.$dataGroup['gid'].'-****User has a valid role in this group<---','error');
+
+							$viewIdToUse = $config->get('pos_group_notifications_group_validation_configgroups')[$dataGroup['gtype']]['viewId'];
+							$displayIdToUse = $config->get('pos_group_notifications_group_validation_configgroups')[$dataGroup['gtype']]['displayId'];
+							$sentenceToCheck = $config->get('pos_group_notifications_group_validation_configgroups')[$dataGroup['gtype']]['sentence'];
+			
+							//drupal_set_message('****$viewIdToUse--->'.$viewIdToUse.'--','error');
+							//drupal_set_message('****$displayIdToUse--->'.$displayIdToUse.'--','error');
+							
+							
+							//$view = Views::getView("trial_validation");
+							$view = Views::getView($viewIdToUse);
+							
+							$arguments = [$dataGroup['gid']];
+			
+						    if (is_object($view)) {
+						        //$view->setDisplay('block_validation');
+						        $view->setDisplay($displayIdToUse);
+						        $view->setArguments($arguments);
+						        $view->execute();
+						
+						        // Render the view
+						        $myRenderedView = $view->render();
+						        //$result = \Drupal::service('renderer')->render($view->render());
+						        $result = \Drupal::service('renderer')->render($myRenderedView);
+						
+						  
+						  		if(is_object($result)) {
+						        	$dataArray = (array) $result;
+									
+									foreach ($dataArray as $k=>$v) {							
+										$pos = strpos(strtolower($v), strtolower($sentenceToCheck));
+										
+										if ($pos!==False) {
+											//drupal_set_message($dataGroup['gid'].'***The group is buildt properly<----','error');
+										}
+										else {
+											$arrayGroupsToBuild[] = ['gid'=>$dataGroup['gid'], 'glabel'=>$dataGroup['glabel'], 'error'=>$v, 'gtype'=>$dataGroup['gtype']];
+										}
+										
+									}
+								}
+							}
+						}
+					}
+				}
+			
+			}
+			
+			//drupal_set_message('uid:'.$data['uid'].'<---sizeof(arrayGroupsToBuild):'.sizeof($arrayGroupsToBuild)."<---",'error');
+			if (sizeof($arrayGroupsToBuild)>0) {
+				//user has groups error
+				
+				$dynamic_content = "";
+				foreach ($arrayGroupsToBuild as $k=>$v) {
+					//drupal_set_message('uid:'.$data['uid'].'****arrayGroupsToBuild id---'.$arrayGroupsToBuild[$k]['gid']."---glabel=".$arrayGroupsToBuild[$k]['glabel']."<---",'error');
+					
+					$arrayGroupsToBuild[$k]['error'] = str_replace("<li>", "<br/>", $arrayGroupsToBuild[$k]['error']);
+					$arrayGroupsToBuild[$k]['error'] = strip_tags($arrayGroupsToBuild[$k]['error']);
+
+					//drupal_set_message('****arrayGroupsToBuild id---'.$arrayGroupsToBuild[$k]['gid'],'error');
+					//drupal_set_message($arrayGroupsToBuild[$k]['gid'].'****arrayGroupsToBuild glabel---'.$arrayGroupsToBuild[$k]['gid'],'error');
+					//drupal_set_message($arrayGroupsToBuild[$k]['gid'].'****arrayGroupsToBuild error---'.$arrayGroupsToBuild[$k]['error'],'error');
+					//drupal_set_message('****arrayGroupsToBuild type---'.$arrayGroupsToBuild[$k]['type'],'error');
+					
+					
+					//$dynamic_content .= $arrayGroupsToBuild[$k]['glabel']."---".$arrayGroupsToBuild[$k]['gid'];					
+					$dynamic_content .="<a href='".$host."/group/".$arrayGroupsToBuild[$k]['gid']."'>".$arrayGroupsToBuild[$k]['glabel']."</a>";	
+					$dynamic_content .= "<br/>";
+					//$dynamic_content .= $arrayGroupsToBuild[$k]['error'];
+				}
+				
+				
+				$to_email = $data['mail'];		
+
+			    $subject_email = $config->get('pos_group_notifications_group_validation_subject');
+				$subject_email = str_replace("[site:name]", $site_name, $subject_email);
+				
+				$default_body_value = $config->get('pos_group_notifications_group_validation_body');
+				
+				
+				$body_email = $default_body_value;
+				$body_email = str_replace("[user:display-name]", $data['realname'], $body_email);
+				$body_email = str_replace("[site:name]", $site_name, $body_email);
+				$body_email = str_replace("[dynamic_content]", $dynamic_content, $body_email);
+			
+				//$body_email = str_replace("[qa:url]", '<a href="'.$host.'/QA/groups">'.$host.'/QA/groups</a>', $body_email);
+						
+				//drupal_set_message('uid:'.$data['uid'].'****to_email---'.$to_email,'error');
+				//drupal_set_message('uid:'.$data['uid'].'****body_email---'.$body_email,'error');
+				
+				$key = 'pos_group_notifications_send_emails_groups_with_validation_errors'; // Replace with Your key
+				
+				pos_send_custom_email($to_email, $subject_email, $body_email, $key);
+				
+				
+			}
+		}
+		//array("uid"=>$uid, "mail"=> $mail, "realname" => $realname, "dataByGroup" => $dataToReturnByGroup );
+	}
+
+	return True;
+}
+
+
 function pos_group_notifications_send_emails_qa_groups_not_empty() {
 	
 	/*
@@ -991,13 +1846,46 @@ function pos_group_notifications_send_emails_qa_groups_not_empty() {
 	
 	$view = Views::getView('all_groups_qa_view');
 	$view->setDisplay('default');
+	//$view->setExposedInput(['field_qa_approved_value' => False, 'field_publish_value' => True]);	
+	//$view->setArguments(array($arg1, $arg2));
+
 	// Execute the view.
 	$view->execute();
 	//get the returned rows
 	$rows = $view->total_rows;
 	//drupal_set_message('--rows='.$rows, 'error');
+	
 	//if this view has contetn, we must send email to
+	//we need to evaluate the items and only send the email if there is any group with this condition:
+	//  “approval requested” = true and qa approved = false 
+	// field_qa_approved = qa approved
+	// field_publish = “approval requested”
+	$cntItemsFulfillConditions = 0;
 	if ($rows>0) {
+
+		foreach ($view->result as $row) {
+			//recover data from the entity (is a group)
+			$gid = $row->_entity->id();
+			$group = Drupal\group\Entity\Group::load($gid);
+			
+			$new_gid = $group->id[0]->value;				
+			
+			
+			$field_publish = $group->field_publish[0]->value;
+			$field_qa_approved = $group->field_qa_approved[0]->value;
+			
+			
+			if (($field_publish==1) && ($field_qa_approved==0)) {
+				//drupal_set_message("Entity id:".(string) $row->_entity->id()." fulfill conditions----new_gid:".(string) $new_gid."<--field_publish:".$field_publish."<------field_qa_approved:".$field_qa_approved."<-----");
+				$cntItemsFulfillConditions = $cntItemsFulfillConditions + 1;
+			}
+			
+		}
+		
+	}
+	
+	if ($cntItemsFulfillConditions>0) {
+	//if ($rows>0) {
 		
 		$config =  \Drupal::config('pos_group_notifications.settings');  // get saved settings		
 		$subject_email = $config->get('pos_group_notifications_qa_not_empty_subject');

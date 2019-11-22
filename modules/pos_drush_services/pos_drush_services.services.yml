@@ -1,0 +1,11 @@
+services:
+    
+  pos_drush_services.workflow.manager:
+    class: Drupal\pos_drush_services\Service\WorkflowManager
+    arguments:
+      - '@entity_type.manager'
+      - '@forms_steps.manager'
+      - '@uuid'
+      - '@current_route_match'
+
+

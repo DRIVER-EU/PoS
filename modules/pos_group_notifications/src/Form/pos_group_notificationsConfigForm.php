@@ -10,6 +10,10 @@ use Drupal\user\Entity\Role;
 use Drupal\Core\Url;
 use Drupal\Core\Link;
 
+use Drupal\Core\Form\FormBase;
+
+
+
 class pos_group_notificationsConfigForm extends ConfigFormBase {
 
 	public function getFormId() {
@@ -218,8 +222,9 @@ class pos_group_notificationsConfigForm extends ConfigFormBase {
 		
 		$form['group2'] = array(
 		  '#type' => 'details',
-		  '#title' => t('Request publication'),
-		  '#description' => t('When group owner/team member sets the "Request publication", the site editor(s) should receive an e-mail.'),
+		  //'#title' => t('Request publication'),
+		  '#title' => t("Publications messages"),
+		  //'#description' => t('When group owner/team member sets the "Request publication", the site editor(s) should receive an e-mail.'),
 		  '#open' => TRUE,
 		  '#group' => 'vertical_tabs',
 		);
@@ -249,9 +254,16 @@ class pos_group_notificationsConfigForm extends ConfigFormBase {
 		'#options' => $rolesToAddInTheList,
 		'#default_value' => $pos_group_notifications_request_publication_role_to_notify,
 		);  		
-		
+
+		$form['group2']['requestpublishing']  = array(
+		  '#type' => 'details',
+		  '#title' => t("Request publication"),
+		  '#description' => t('Used when user changes the “approval requested” (field field_publish)  to true and qa approved (field field_qa_approved) is false.'),
+		  '#open' => TRUE
+		);
+				
 		$pos_group_notifications_request_publication_subject = $config->get('pos_group_notifications_request_publication_subject');
-		$form['group2']['pos_group_notifications_request_publication_subject'] = array(
+		$form['group2']['requestpublishing']['pos_group_notifications_request_publication_subject'] = array(
 			'#type' => 'textfield',
 			'#title' => t('Subject e-mail'),
 			'#maxlength' => 128,
@@ -263,7 +275,39 @@ class pos_group_notificationsConfigForm extends ConfigFormBase {
 		
 		$default_body_value = $config->get('pos_group_notifications_request_publication_body'); 
 		
-		$form['group2']['pos_group_notifications_request_publication_body'] = array(
+		$form['group2']['requestpublishing']['pos_group_notifications_request_publication_body'] = array(
+			'#type' => 'textarea',
+			//'#type' => 'text_format',
+			//'#format' => 'full_html',
+			'#rows'=> 7,
+			//'#maxlength' => 255,
+			'#title' => t('Body e-mail'),
+			'#description' => t('[user:display-name], [editor:name], [group:name] and [site:name] will be replaced by the appropriate values.'),
+			'#required'      => TRUE,
+			'#default_value' => $default_body_value,
+		);
+
+        $form['group2']['publishedgroup']  = array(
+		  '#type' => 'details',
+		  '#title' => t("Published"),
+		  '#description' => t('Used when user changes the “approval requested” (field field_publish) to true and qa approved (field_qa_approved) is true.'),
+		  '#open' => TRUE
+		);
+				
+		$pos_group_notifications_publication_subject = $config->get('pos_group_notifications_publication_subject');
+		$form['group2']['publishedgroup']['pos_group_notifications_publication_subject'] = array(
+			'#type' => 'textfield',
+			'#title' => t('Subject e-mail'),
+			'#maxlength' => 128,
+			'#description' => t('[site:name] will be replaced by the appropriate value.'),
+			'#required'      => TRUE,
+			//'#default_value' => 'Subject....',
+			'#default_value' => $pos_group_notifications_publication_subject,
+		);
+		
+		$default_body_value = $config->get('pos_group_notifications_publication_body'); 
+		
+		$form['group2']['publishedgroup']['pos_group_notifications_publication_body'] = array(
 			'#type' => 'textarea',
 			//'#type' => 'text_format',
 			//'#format' => 'full_html',
@@ -278,7 +322,7 @@ class pos_group_notificationsConfigForm extends ConfigFormBase {
 		$form['group3'] = array(
 		  '#type' => 'details',
 		  '#title' => t('QA not empty'),
-		  '#description' => t("Data used into the Cron task to send e-mails to the site editors to reminder there that /QA/groups isn't empty."),
+		  '#description' => t("Data used into the Cron task to send e-mails to the site editors to reminder there that the '/QA/groups' view isn't empty when some of the groups in that view has the field 'Approval requested?' (field_publish) = True and the field 'QA approved?' (field_qa_approved) = False."),
 		  //'#description' => t("The site editors should receive a reminder if /QA/groups isn't empty."),
 		  '#open' => TRUE,
 		  '#group' => 'vertical_tabs',
@@ -500,12 +544,241 @@ class pos_group_notificationsConfigForm extends ConfigFormBase {
 			'#required'      => TRUE,
 			'#default_value' => $default_body_value,
 		);		
-				
+
+
+		/***********************/
+		//Groups with validation errors
+		$form['group7'] = array(
+		  '#type' => 'details',		  
+		  '#title' => t("Groups with validation errors"),
+		  '#description' => t("Data used into the Cron task to send e-mails (one time per month) to inform the members of a group that their group has some validation error."),
+		  '#open' => TRUE,
+		  '#group' => 'vertical_tabs',
+		);
+
+		$form['group7']['pos_group_notifications_group_validation_error_enabled'] = array(		
+			'#type'          => 'checkbox',
+			'#title' => t('Enable'),
+			'#description' => t('Check this checkbox to send an e-mail to the users if their group has some validation error.'),
+			'#required'      => FALSE,
+			'#default_value' => $config->get('pos_group_notifications_group_validation_error_enabled'),
+		);
+
+
+/***********/
+		$groupsTypes = array(
+		    'trial' => $this
+		      ->t('Trials'),
+		    'solution' => $this
+		      ->t('Solutions'),
+			'country_profile' => $this
+		      ->t('Country Profile')
+		  );
+
+		$rolesTypes = array(
+		    'owner' => $this
+		      ->t('Owners'),
+		    'team' => $this
+		      ->t('Teams'),
+		    'contact' => $this
+		      ->t('Contact'),		      
+		  );
+		 
+		//https://openwritings.net/pg/drupal/drupal-8-create-table-form-input-fields
+
+		
+		$form['group7']['markup7_1'] = array(
+			'#type' => 'markup',
+			'#prefix' => '</br>',
+			'#markup' => t('Configure each group type. Only the members of the selected roles per group type will receive an e-mail.'),
+			'#suffix' => '</br>',
+			//'#tree' => true,
+		);
+						
+		$form['group7']['pos_group_notifications_group_validation_configgroups'] = array(
+            '#type' => 'table',
+            '#title' => 'Configuration groups table',
+            '#header' => array('Group Type', 'Roles', 'View Id', 'Display Id', 'Sentece to check to assume the group is buildt properly'),
+		);
+ 
+        // Add input fields in table cells.
+        //for ($i=1; $i<=count($groupsTypes); $i++) {
+        foreach ($groupsTypes as $k=>$v) {
+        	//drupal_set_message($config->get('pos_group_notifications_group_validation_configgroups')[$k]['group']);
+            $form['group7']['pos_group_notifications_group_validation_configgroups'][$k]['group'] = array(
+				'#type'          => 'checkbox',
+				'#title' => $v,
+				'#required'      => FALSE,
+				'#default_value' => $config->get('pos_group_notifications_group_validation_configgroups')[$k]['group'],
+			);
+
+ 			$defaultValueCheckboxes = array();
+			foreach ($config->get('pos_group_notifications_group_validation_configgroups')[$k]['rolesbygroup'] as $k_item=> $v_item) {
+				if ($k_item===$v_item) {				
+					array_push($defaultValueCheckboxes, $v_item);
+				}
+			}
+
+
+            $form['group7']['pos_group_notifications_group_validation_configgroups'][$k]['rolesbygroup'] = array(
+                                                '#type' => 'checkboxes',
+                                                '#options' => $rolesTypes,
+                                                //'#attributes' => array('checked' => 'checked'),
+                                                //'#default_value' => array_keys($config->get('pos_group_notifications_group_validation_configgroups')[$k]['rolesbygroup']),
+                                                '#default_value' => $defaultValueCheckboxes,
+                                            );
+											
+			$form['group7']['pos_group_notifications_group_validation_configgroups'][$k]['viewId'] = array(
+				'#type' => 'textfield',
+				//'#title' => t('View Id'),
+				'#maxlength' => 128,
+				'#size' => 20,
+				'#required'      => FALSE,
+				'#default_value' => $config->get('pos_group_notifications_group_validation_configgroups')[$k]['viewId'],
+				//'#states' => array(
+			    //	'visible' => array(
+				//		':input[name="pos_group_notifications_group_validation_configgroups['.$k.'][group]"]' => array(
+				 //           array('checked' => TRUE),
+				 //       ),
+				 //   ),
+				//),
+			);
+
+			$form['group7']['pos_group_notifications_group_validation_configgroups'][$k]['displayId'] = array(
+				'#type' => 'textfield',
+				//'#title' => t('Display Id'),
+				'#maxlength' => 128,
+				'#size' => 20,
+				'#required'      => FALSE,
+				'#default_value' => $config->get('pos_group_notifications_group_validation_configgroups')[$k]['displayId'],
+			);			
+
+			$form['group7']['pos_group_notifications_group_validation_configgroups'][$k]['sentence'] = array(
+				'#type' => 'textfield',
+				//'#title' => t('Sentece'),
+				'#maxlength' => 128,
+				'#size' => 30,
+				'#required'      => FALSE,
+				'#default_value' => $config->get('pos_group_notifications_group_validation_configgroups')[$k]['sentence'],
+			);									
+											                                            
+        }
+
+  
+
+                
+		$form['group7']['markup7_2'] = array(
+			'#type' => 'markup',
+			'#prefix' => '</br>',
+			'#markup' => '',
+			'#suffix' => '</br>',
+			//'#tree' => true,
+		); 
+
+/***********/
+		  
+
+
+		$pos_group_notifications_group_validation_subject = $config->get('pos_group_notifications_group_validation_subject');
+		$form['group7']['pos_group_notifications_group_validation_subject'] = array(
+			'#type' => 'textfield',
+			'#title' => t('Subject e-mail'),
+			'#maxlength' => 128,
+			'#description' => t('[site:name] will be replaced by the appropriate value.'),
+			'#required'      => TRUE,
+			'#default_value' => $pos_group_notifications_group_validation_subject,
+		);
+		
+		$default_body_value = $config->get('pos_group_notifications_group_validation_body'); 
+		
+		$form['group7']['pos_group_notifications_group_validation_body'] = array(
+			'#type' => 'textarea',
+			'#rows'=> 7,
+			'#title' => t('Body e-mail'),
+			'#description' => t('[user:display-name], [dynamic_content] and [site:name] will be replaced by the appropriate values.'),
+			'#required'      => TRUE,
+			'#default_value' => $default_body_value,
+		); 
+
 		/*******************/
 					
 		return $form;
 	}
 
+	public function validateForm(array &$form, FormStateInterface $form_state) {
+    	parent::validateForm($form, $form_state);
+
+
+    	$configValidationGroups = $form_state->getValue('pos_group_notifications_group_validation_configgroups');
+    	//$accept = $form_state->getValue('accept');
+		foreach ($configValidationGroups as $gK => $gV) {
+			//drupal_set_message($gK.'---'.(string) $gV.'<***','error');
+
+			
+			$roleSelectedByGroup = False;
+			$errorXviewId = False;
+			$errorXdisplayId = False;
+			$errorXsentence = False;
+				
+				
+			if ($configValidationGroups[$gK]['group']==1) {
+				//let's check if there is a role selected
+				//drupal_set_message("let's check if there is a role selected for ".$gK,'error');
+				foreach ($configValidationGroups[$gK]['rolesbygroup'] as $gK2 => $gV2) {
+					//drupal_set_message('----'.$gK.'---'.$gK2.'---'.(string) $gV2.'<***','error');
+					if ($gK2 === $gV2) {
+						$roleSelectedByGroup = True;
+						//drupal_set_message("let's check if there is a role selected for ".$gK."--equal",'error');
+					}
+					else {
+						//drupal_set_message("let's check if there is a role selected for ".$gK."--different",'error');
+					}
+				}
+				
+				
+				if (strlen($configValidationGroups[$gK]['viewId']) === 0)
+				{
+					$errorXviewId = True;
+				}
+				
+				if (strlen($configValidationGroups[$gK]['displayId']) === 0)
+				{
+					$errorXdisplayId = True;
+				}
+				
+				if (strlen($configValidationGroups[$gK]['sentence']) === 0)
+				{
+					$errorXsentence = True;
+				}
+				
+			}
+			else {
+				$roleSelectedByGroup = True;
+			}
+			
+			if (!$roleSelectedByGroup) {				
+				$form_state->setErrorByName('pos_group_notifications_group_validation_configgroups]['.$gK.'][rolesbygroup', $this->t('Select a role in '.$gK.'.'));
+			}
+			if ($errorXviewId) {
+				$form_state->setErrorByName('pos_group_notifications_group_validation_configgroups]['.$gK.'][viewId', $this->t('Add the id of a view in '.$gK.'.'));
+			}
+			if ($errorXdisplayId) {
+				$form_state->setErrorByName('pos_group_notifications_group_validation_configgroups]['.$gK.'][displayId', $this->t('Add the id of a display in '.$gK.'.'));
+			}
+			if ($errorXsentence) {
+				$form_state->setErrorByName('pos_group_notifications_group_validation_configgroups]['.$gK.'][sentence', $this->t('Add a sentece in '.$gK.'.'));
+			}			
+		
+			
+			
+			//['group']
+		}
+    	//if (strlen($title) < 10) {
+      		// Set an error for the form element with a key of "title".
+      		//$form_state->setErrorByName('title', $this->t('The title must be at least 10 characters long.'));
+
+	}
+  
 	public function submitForm(array &$form, FormStateInterface $form_state) {
 		$config = $this->config('pos_group_notifications.settings');
 		//$config->set('pos_group_notifications_types', $form_state->getValue('pos_group_notifications_types')); 
@@ -535,6 +808,10 @@ class pos_group_notificationsConfigForm extends ConfigFormBase {
 		$config->set('pos_group_notifications_request_publication_subject', $form_state->getValue('pos_group_notifications_request_publication_subject'));
 		$config->set('pos_group_notifications_request_publication_body', $form_state->getValue('pos_group_notifications_request_publication_body'));
 		
+		$config->set('pos_group_notifications_publication_subject', $form_state->getValue('pos_group_notifications_publication_subject'));
+		$config->set('pos_group_notifications_publication_body', $form_state->getValue('pos_group_notifications_publication_body'));
+		
+		
 		//g3		
 		$config->set('pos_group_notifications_qa_not_empty_role_to_notify', $form_state->getValue('pos_group_notifications_qa_not_empty_role_to_notify'));
 		$config->set('pos_group_notifications_qa_not_empty_subject', $form_state->getValue('pos_group_notifications_qa_not_empty_subject'));
@@ -561,6 +838,16 @@ class pos_group_notificationsConfigForm extends ConfigFormBase {
 		$config->set('pos_group_feedback_answer_is_given_enabled', $form_state->getValue('pos_group_feedback_answer_is_given_enabled'));
 		$config->set('pos_group_notifications_feedback_answered_subject', $form_state->getValue('pos_group_notifications_feedback_answered_subject'));
 		$config->set('pos_group_notifications_feedback_answered_body', $form_state->getValue('pos_group_notifications_feedback_answered_body'));
+
+
+		//g7		
+		$config->set('pos_group_notifications_group_validation_error_enabled', $form_state->getValue('pos_group_notifications_group_validation_error_enabled'));		
+		$config->set('pos_group_notifications_group_validation_subject', $form_state->getValue('pos_group_notifications_group_validation_subject'));
+		$config->set('pos_group_notifications_group_validation_body', $form_state->getValue('pos_group_notifications_group_validation_body'));
+	
+		$config->set('pos_group_notifications_group_validation_configgroups', $form_state->getValue('pos_group_notifications_group_validation_configgroups'));
+		//$values = $form_state->getValues();
+		//drupal_set_message(print_r($values['pos_group_notifications_group_validation_configgroups'],true));
 		
 		$config->save(); // save data in pos_group_notifications.settings
 		

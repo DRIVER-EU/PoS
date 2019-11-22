@@ -1,0 +1,43 @@
+<?php
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+
+function pos_drush_services_update_projects_alter(&$projects) {
+  // Hide a site-specific module from the list.
+  unset($projects['pos_drush_services']);
+}
+
+function pos_drush_services_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.pos_drush_services':
+      return t("
+        <h2>PoS drush services help module</h2>
+        <p>This module has been created to add a new drush command</p>
+		<p>Existing or migrated content to be added to a workflow.</p>
+		<p><strong>Examples</strong>:</p>
+		<p><ul>
+		<li>forms_steps_attach_pos_workflow step_form_machine_name --nid='12345678'.         Attach the specific node to workflow.</li>
+		<li>forms_steps_attach_pos_workflow step_form_machine_name --gid='23'.               Attach the specific group to workflow.</li>
+        <li>forms_steps_attach_pos_workflow step_form_machine_name --content_type='article'. Attach the specific content type to workflow.</li>
+        <li>forms_steps_attach_pos_workflow step_form_machine_name --group_type='solution'.  Attach the specific group type to workflow.</li>
+		</ul></p>
+		<p><strong>Arguments</strong>:</p>
+  		<p>
+  		<ul>
+  			<li>workflow: The forms_steps name machine.</li>
+			<li>Options:
+  				<ul>
+  					<li>--nid[=NID]</li>
+  					<li>--gid[=GID]</li>
+  					<li>--content_type[=CONTENT_TYPE]</li>
+  					<li>--group_type[=GROUP_TYPE]</li>
+				</ul>
+			</li>
+		</ul>
+		</p>
+		<p><strong>Aliases</strong>: fs-attach-pos-workflow</p>
+    ");
+    break;
+  }
+}

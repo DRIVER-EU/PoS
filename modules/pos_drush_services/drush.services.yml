@@ -1,0 +1,5 @@
+services:
+  forms_steps.commands:
+    class: \Drupal\pos_drush_services\Commands\FormsStepsCommands
+    tags:
+      - { name: drush.command }

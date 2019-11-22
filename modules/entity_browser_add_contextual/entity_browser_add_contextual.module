@@ -1,0 +1,39 @@
+<?php
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+function entity_browser_add_contextual_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.entity_browser_add_contextual':
+      return t("
+        <h2>Makes some basic contextual Filters available for entity browsers.</h2>
+        <h3>Instructions</h3>
+        <p>Unpack in the *modules* folder (currently in the root of your Drupal 8 installation) and enable in '/admin/modules'.</p>
+
+        <p>To implement a contextual filter for an entitybrowser:</p>
+        <ul>
+           <li>add a contextual filter to the display</li>
+           <li>set 'WHEN THE FILTER VALUE IS NOT AVAILABLE' to 'provide a default value'</li>
+           <li>set type of default value to 'query parameter'</li>
+        </ul>
+        <p>Values you can use as query parameter:</p>
+        <ul>
+          <li>route parameters like 'node' or 'group' for entity id</li>
+          <li>Parts of the path from which the entity browser is called as number beginning form 0. E.g. path is /node/add/article:</li>
+           <ul>
+            <li>use queryparameter '0' to use 'node' for contextual filter</li>
+            <li>use queryparameter '1' to use 'add' for contextual filter</li>
+            <li>use queryparameter '2' to use 'article' for contextual filter</li>
+          </li>
+          <li>maybe there are more parameters availabel. To see if this ist the case 
+             check the sourcecode of the entitybrowser as IFrame display. 
+             You will find possible parameters in the src attribute of the iframe.
+          </li>
+        </ul>
+    </ul> 
+    <p>Using the entity id of the route as contextual filter and relationships 
+    you should get veryfar to preselect entityin the entity browser</p> 
+    ");
+    break;
+  }
+}

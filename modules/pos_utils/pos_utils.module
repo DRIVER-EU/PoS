@@ -7,6 +7,11 @@ use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Link; // This should be added in controller
 use Drupal\Core\Url;
 
+function pos_utils_update_projects_alter(&$projects) {
+  // Hide a site-specific module from the list.
+  unset($projects['pos_utils']);
+}
+
 
 function pos_utils_page_attachments(array &$attachments) {
 	$attachments['#attached']['library'][] = 'pos_utils/pos_utils';
@@ -46,7 +51,7 @@ function pos_utils_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form
 				}			
 				
 				$connection = \Drupal::database();
-				$result = $connection->query("SELECT vid FROM {node_field_revision} WHERE nid = :id and langcode = :langcode and content_translation_outdated=0 order by vid desc limit 1 ", [':id' => $finalId,':langcode' =>$langcode,]);				
+				$result = $connection->query("SELECT vid FROM {node_field_revision} WHERE nid = :id and langcode = :langcode and content_translation_outdated=0 and revision_translation_affected=1 order by vid desc limit 1 ", [':id' => $finalId,':langcode' =>$langcode,]);				
 									
 				if ($result) {
 					while ($row = $result->fetchAssoc()) {
@@ -74,7 +79,8 @@ function pos_utils_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form
 				//$languageExtraString .= '<div id="displayDifferences" class="displayDifferences"></div>';
 				
 				//$languageExtraString2 .= '<a href="javascript:document.getElementById(\'destinationclassdiv\').innerHTML = \'\';">TEST</a>';
-			//visually-hidden	
+			//visually-hidden
+/*
 				$form['differences'] = array(
 				'#type' => 'markup',
 				'#prefix' => '</br><div>'.$languageExtraString.'</div>',
@@ -82,7 +88,22 @@ function pos_utils_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form
 				'#suffix' => '',
 				'#weight' => -12,
 				);
-				
+*/
+
+
+				$form['showdifferencesiniframe'] = array(
+				    '#name' => 'clear',
+				    '#type' => 'button',
+				    '#value' => t('Show differences'),
+				    '#weight' => -11,
+				    '#prefix' => '</br>',
+				    '#attributes' => array(
+				    	'id' => 'btnshowdifferencesiniframe',
+				    	'class' => array('js-form-submit', 'form-submit'),
+				    	'onclick' => 'var element = document.getElementById("displayDifferences2"); element.classList.remove("visually-hidden"); var element2 = document.getElementById("btnshowdifferencesiniframe"); element2.classList.add("visually-hidden"); var element3 = document.getElementById("btnhidedifferences"); element3.classList.remove("visually-hidden");return false;'
+						),
+				  );
+/*				  
 				$form['hidedifferences'] = array(
 				    '#name' => 'clear',
 				    '#type' => 'button',
@@ -91,11 +112,22 @@ function pos_utils_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form
 				    '#attributes' => array(
 				    	'id' => 'btnhidedifferences',
 				    	'class' => array('btnhidedifferences', 'visually-hidden'),
-				    	'onclick' => 'document.getElementById("displayDifferences").innerHTML = ""; var element = document.getElementById("btnhidedifferences"); element.classList.add("visually-hidden"); var element2 = document.getElementById("btnshowdifferences"); element2.classList.remove("visually-hidden"); return false;'
+				    	'onclick' => 'document.getElementById("displayDifferences").innerHTML = "";  var element = document.getElementById("btnhidedifferences"); element.classList.add("visually-hidden"); var element2 = document.getElementById("btnshowdifferences"); element2.classList.remove("visually-hidden"); return false;'
 						),
 				  );	
-				  
-				  
+*/
+				$form['hidedifferencesbyiframe'] = array(
+				    '#name' => 'clear',
+				    '#type' => 'button',
+				    '#value' => t('Hide differences'),
+				    '#weight' => -11,				    
+				    '#attributes' => array(
+				    	'id' => 'btnhidedifferences',
+				    	'class' => array('btnhidedifferences', 'visually-hidden'),
+				    	'onclick' => 'document.getElementById("displayDifferences").innerHTML = ""; var element4 = document.getElementById("displayDifferences2"); element4.classList.add("visually-hidden"); var element = document.getElementById("btnhidedifferences"); element.classList.add("visually-hidden"); var element2 = document.getElementById("btnshowdifferencesiniframe"); element2.classList.remove("visually-hidden"); return false;'
+						),
+				  );				  
+
 				$form['displaydifferencesmarkup'] = array(
 					'#type' => 'markup',
 					'#prefix' => '',
@@ -103,6 +135,13 @@ function pos_utils_form_alter(&$form, \Drupal\Core\Form\FormStateInterface $form
 					'#suffix' => '<div id="displayDifferences" class="displayDifferences"></div>',
 					'#weight' => -10,
 				);				  					
+
+				$form['test'] = array(
+				'#type' => 'inline_template',
+				'#template' => '</br><div id="displayDifferences2" class="displayDifferences2 visually-hidden"><iframe width="100%" height="200px" frameborder="0" allowfullscreen src="{{ url }}"></iframe></div>',
+					'#context' => array( 'url' => $urlDifferences),
+				'#weight' => -10,
+				);
 
 			}
 		}
@@ -256,6 +295,9 @@ function pos_utils_views_pre_render(\Drupal\views\ViewExecutable $view) {
 					
 					if (($entity_type_id == 'node') || ($entity_type_id == 'group')) {
 
+						$alias = \Drupal::service('path.alias_manager')->getAliasByPath('/'.$entity_type_id.'/'.$finalId, $langcode);
+						//drupal_set_message("--entity_type_id=".$entity_type_id."---finalId=".$finalId."----langcode=".$langcode."--alias=".$alias."----");
+
 						//drupal_set_message($finalId."--".$entity_type_id."---langcode:".$langcode."--");
 						$itemHasTranslation = False;
 						if ($entity_type_id == 'node')  {
@@ -269,7 +311,19 @@ function pos_utils_views_pre_render(\Drupal\views\ViewExecutable $view) {
 							if ($node->hasTranslation($langcode)) {
 		  						$translation = $node->getTranslation($langcode);
 								$itemHasTranslation = True;
-								$check = $user->hasPermission('Edit translations');
+								//$check = $user->hasPermission('Edit translations');
+								$check = content_translation_translate_access($node)->isAllowed();
+
+								//drupal_set_message("aaaa2 check=". (string) $check."-------");
+											
+											if ($check) {
+												$check = $user->hasPermission('translate '.$node->type[0]->target_id.' node');
+												//drupal_set_message("aaaa1 >".$node->type[0]->target_id."<---translate ".$node->type[0]->target_id." node check=". (string) $check."-------");
+												if (!$check) {										
+													$check = $user->hasPermission('translate any entity');
+													//drupal_set_message("translate any entity >  check=". (string) $check."-------");									
+												}
+											}
 								
 								$current_vid = $translation->get('vid')[0]->value;
 								$trans_created = $translation->get('created')[0]->value;
@@ -279,7 +333,17 @@ function pos_utils_views_pre_render(\Drupal\views\ViewExecutable $view) {
 
 							}
 							else {
-								$check = $user->hasPermission('Create translations');
+								//$check = $user->hasPermission('Create translations');
+								$check = content_translation_translate_access($node)->isAllowed();
+								
+								if ($check) {
+									$check = $user->hasPermission('translate '.$node->type[0]->target_id.' node');
+									//drupal_set_message("aaaa2 >".$node->type[0]->target_id."<---translate ".$node->type[0]->target_id." node check=". (string) $check."-------");
+									if (!$check) {										
+										$check = $user->hasPermission('translate any entity');
+										//drupal_set_message("translate any entity >  check=". (string) $check."-------");									
+									}
+								}
 							}
 						}
 						else if ($entity_type_id == 'group')  {
@@ -298,7 +362,37 @@ function pos_utils_views_pre_render(\Drupal\views\ViewExecutable $view) {
 											$nodeRevision_translation_affected = $row['content_translation_status'];
 											$nodeRevision_content_translation_outdated =  $row['content_translation_outdated'];
 											$itemHasTranslation = True;
+											/*
 											$check = $user->hasPermission('Edit translations');
+											drupal_set_message("aaaa1 Edit translations check=". (string) $check."-------");
+											*/
+											/*
+											$check = $user->hasPermission('Create translations');
+											drupal_set_message("aaaa1 Create translations check=". (string) $check."-------");
+											*/
+											$check = content_translation_translate_access($group)->isAllowed();																						
+											//drupal_set_message("aaaa2 check=". (string) $check."-------");
+											
+											if ($check) {
+												$check = $user->hasPermission('translate '.$group->type[0]->target_id.' group');
+												//drupal_set_message("aaaa1 >".$group->type[0]->target_id."<---translate ".$group->type[0]->target_id." group check=". (string) $check."-------");
+												
+												if (!$check) {										
+													$check = $user->hasPermission('translate any entity');
+													//drupal_set_message("translate any entity >  check=". (string) $check."-------");									
+												}
+											}
+											 
+											/*
+											foreach ($group->type[0]->target_id as $k=>$v) {
+												drupal_set_message("aaaa1 >k:".(string)$k."---------");
+											}
+											*/
+											/*
+											
+											*/
+											
+									
   										}
 									}
 									
@@ -308,7 +402,18 @@ function pos_utils_views_pre_render(\Drupal\views\ViewExecutable $view) {
 								catch(Exception $e) {
 									//drupal_set_message("--NO translation for gid=".$finalId."----Message:".$e->getMessage()."---");
 									$itemHasTranslation = False;
-									$check = $user->hasPermission('Create translations');
+									//$check = $user->hasPermission('Create translations');
+									$check = content_translation_translate_access($group)->isAllowed();
+									
+									if ($check) {
+												$check = $user->hasPermission('translate '.$group->type[0]->target_id.' group');
+												//drupal_set_message("aaaa1 >".$group->type[0]->target_id."<---translate ".$group->type[0]->target_id." group check=". (string) $check."-------");
+												
+												if (!$check) {										
+													$check = $user->hasPermission('translate any entity');
+													//drupal_set_message("translate any entity >  check=". (string) $check."-------");									
+												}
+											}
 								}
 							}
 							else {
@@ -333,15 +438,24 @@ function pos_utils_views_pre_render(\Drupal\views\ViewExecutable $view) {
 								$nodeRevision_translation_affected = $translation->get('revision_translation_affected')[0]->value;			
 								$nodeRevision_content_translation_outdated = $translation->get('content_translation_outdated')[0]->value;
 							}
+							
+							
 							//$languageExtraString .= (string)$nodeRevision_content_translation_outdated;
 							if ($nodeRevision_content_translation_outdated==1) {
 								if ($check) {
 									$urlToTheNode = $base_url."/".$langcode."/".$entity_type_id."/".$finalId."/edit?destination=".$current_uri;
-									$urlToTheNodeView = $base_url."/".$langcode."/".$entity_type_id."/".$finalId."?destination=".$current_uri;
+									//$urlToTheNodeView = $base_url."/".$langcode."/".$entity_type_id."/".$finalId."?destination=".$current_uri;
+									
+									//$urlToTheNode = $base_url."/".$langcode.$alias."/edit?destination=".$current_uri;
+									$urlToTheNodeView = $base_url."/".$langcode.$alias."?destination=".$current_uri;
+									
 								}
 								else {
-									$urlToTheNode = $base_url."/".$langcode."/".$entity_type_id."/".$finalId;
-									$urlToTheNodeView = $base_url."/".$langcode."/".$entity_type_id."/".$finalId;
+									//$urlToTheNode = $base_url."/".$langcode."/".$entity_type_id."/".$finalId;
+									//$urlToTheNodeView = $base_url."/".$langcode."/".$entity_type_id."/".$finalId;
+									
+									$urlToTheNode = $base_url."/".$langcode.$alias;
+									$urlToTheNodeView = $base_url."/".$langcode.$alias;
 								}
 								
 								$outated = True;
@@ -356,11 +470,17 @@ function pos_utils_views_pre_render(\Drupal\views\ViewExecutable $view) {
 								//$urlToTheNode = $node->toUrl()->toString();
 								if ($check) {
 									$urlToTheNode = $base_url."/".$langcode."/".$entity_type_id."/".$finalId."/edit?destination=".$current_uri;
-									$urlToTheNodeView = $base_url."/".$langcode."/".$entity_type_id."/".$finalId."/edit?destination=".$current_uri;
+									//$urlToTheNodeView = $base_url."/".$langcode."/".$entity_type_id."/".$finalId."?destination=".$current_uri;
+									
+									//$urlToTheNode = $base_url."/".$langcode.$alias."/edit?destination=".$current_uri;
+									$urlToTheNodeView = $base_url."/".$langcode.$alias."?destination=".$current_uri;
 								}
 								else {
-									$urlToTheNode = $base_url."/".$langcode."/".$entity_type_id."/".$finalId;
-									$urlToTheNodeView = $base_url."/".$langcode."/".$entity_type_id."/".$finalId;
+									//$urlToTheNode = $base_url."/".$langcode."/".$entity_type_id."/".$finalId;
+									//$urlToTheNodeView = $base_url."/".$langcode."/".$entity_type_id."/".$finalId;
+									
+									$urlToTheNode = $base_url."/".$langcode.$alias;
+									$urlToTheNodeView = $base_url."/".$langcode.$alias;
 								}
 								
 								$available = True;
@@ -373,7 +493,7 @@ function pos_utils_views_pre_render(\Drupal\views\ViewExecutable $view) {
 						}
 						else {
 							if ($check) {
-								$urlToTheNode = $base_url."/".$langcode."/".$entity_type_id."/".$finalId."/translations/add/en/".$langcode."?destination=".$current_uri;
+								$urlToTheNode = $base_url."/".$langcode."/".$entity_type_id."/".$finalId."/translations/add/en/".$langcode."?destination=".$current_uri;							
 								$urlToTheNodeView = "";
 							}
 							else {
@@ -444,6 +564,17 @@ function pos_utils_views_pre_render(\Drupal\views\ViewExecutable $view) {
 						else if ($linkText == "Create") {
 							$displayLink = True;
 						}
+												
+						//only if the user can edit the item (group or node), can create a translation
+						if ($displayLink) {
+							$displayLink = False;
+							if ($entity_type_id=='node') {
+								$displayLink = $node->access('update');
+							}
+							else if ($entity_type_id=='group') {
+								$displayLink = $group->access('update');
+							}
+						}						
 						
 						if (($urlToTheNode!="") && ($urlToTheNodeView!="")) {
 							if ($displayLink) {

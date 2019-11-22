@@ -1,0 +1,12 @@
+name: PoS drush services
+description: 'A drush command to add groups to a forms step.'
+core: 8.x
+package: Custom
+
+type: module
+core: 8.x
+version: '8.x-1.0'
+project: 'pos_drush_services'
+
+dependencies:
+  - drupal:forms_steps 

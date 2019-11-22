@@ -1,16 +1,13 @@
 langcode: en
 status: true
 dependencies:
-  enforced:
-    module:
-      - pos_group_notifications 
   module:
     - gnode
     - group
     - history
     - node
 _core:
-  default_config_hash: vFdAFr-5BvWoWFKan8fzx4d8PKCtkG2u06qxmsKORWw
+  default_config_hash: JNgeOCXX9e5xTIgoPme_rBvbFtmvMGaNK81MdAll2Bw
 id: pos_notification_group_nodes
 label: 'PoS Notification group nodes'
 module: gnode
@@ -688,11 +685,12 @@ display:
     cache_metadata:
       max-age: -1
       contexts:
-        - group_membership.roles.permissions
         - 'languages:language_content'
         - 'languages:language_interface'
+        - route.group
         - url
         - url.query_args
+        - user.group_permissions
         - 'user.node_grants:view'
       tags: {  }
   page_1:
@@ -716,10 +714,11 @@ display:
     cache_metadata:
       max-age: -1
       contexts:
-        - group_membership.roles.permissions
         - 'languages:language_content'
         - 'languages:language_interface'
+        - route.group
         - url
         - url.query_args
+        - user.group_permissions
         - 'user.node_grants:view'
       tags: {  }
