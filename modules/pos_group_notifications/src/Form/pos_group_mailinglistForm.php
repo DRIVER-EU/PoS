@@ -288,7 +288,7 @@ class pos_group_mailinglistForm extends ConfigFormBase {
 			'#allowed_formats' => ['basic_html'],
 			'#rows'=> 7,
 			'#title' => t('Body e-mail'),
-			'#description' => t('Write here the body of the e-mail.').t('If you use [user:display-name] and [site:name] they will  be replaced by the appropriate values.'),
+			'#description' => t('Write here the body of the e-mail.').t('If you use [user:display-name] and/or [site:name] they will  be replaced by the appropriate values.'),
 			'#required'      => TRUE,
 		);
 				
@@ -302,7 +302,7 @@ class pos_group_mailinglistForm extends ConfigFormBase {
 			'#allowed_formats' => ['basic_html'],
 			'#rows'=> 7,
 			'#title' => t('Footer text'),
-			'#description' => t('Write here the footer of the e-mail. It will be added in the body.').' '.t('If you use [site:name] it will  be replaced by the appropriate value.').' '.('This text will be stored to reuse it in the next e-mail.'),
+			'#description' => t('Write here the footer of the e-mail. It will be added in the body.').' '.t('If you use [site:name] and/or [user:edit-url] they will  be replaced by the appropriate value.').' '.('This text will be stored to reuse it in the next e-mail.'),
 			'#required'      => TRUE,
 			'#default_value' => ($default_pos_group_mailinglist_footer_body_message),
 		);
@@ -563,6 +563,7 @@ class pos_group_mailinglistForm extends ConfigFormBase {
 		
 		
 		//we add the footer text
+		$original_body_email_to_create_node = $original_body_email; 
 		$original_body_email .=	'<p> </p>'.$footerText;
 		
 		// access to the main site data
@@ -577,6 +578,8 @@ class pos_group_mailinglistForm extends ConfigFormBase {
 		
 		$cntEmailsSended = 0;
 		$finalListOfUsersToInsert = [];
+		
+		
 		foreach ($finalUsersArray as $key=>$value) {
 						
 			//$finalListOfUsersToInsert[] = ['value' => $key];
@@ -591,6 +594,17 @@ class pos_group_mailinglistForm extends ConfigFormBase {
 			$body_email = $original_body_email;
 			$body_email = str_replace("[user:display-name]", $realname, $body_email);
 			$body_email = str_replace("[site:name]", $site_name, $body_email);
+			
+			global $base_url;
+			$host = $base_url;
+			
+			//$editUserUrl = '<a href="'.$host.'/user/'.$key.'/edit'.'">your user profile</a>';
+			
+			$editUserUrl = $host.'/user/'.$key.'/edit';
+			
+			//drupal_set_message('editUserUrl='.$editUserUrl);
+			
+			$body_email = str_replace("[user:edit-url]", $editUserUrl, $body_email);
 			
 			$body_email  = html_entity_decode( $body_email);
 			$body_email = render($body_email);
@@ -611,7 +625,7 @@ class pos_group_mailinglistForm extends ConfigFormBase {
   			'title'       => $subject_email,
   			//'body'       => $body_email,
   			'langcode' => 'en',
-  			'body' => ['format' => 'basic_html', 'value' => $body_email],
+  			'body' => ['format' => 'basic_html', 'value' => $original_body_email_to_create_node],
   			'field_notification_recipients' => $finalListOfUsersToInsert
 		]);
 		$node->save();				
