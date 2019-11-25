@@ -1,0 +1,90 @@
+<?php
+
+function pos_default_content_update_projects_alter(&$projects) {
+  // Hide a site-specific module from the list.
+  unset($projects['pos_default_content']);
+}
+
+function pos_default_content_install() {
+
+	try {
+		/*
+		$query = db_select('entity_subqueue__items', 'esi')
+      		->condition('esi.entity_id', 'edit_functions', '=')
+      		->fields('esi', array('entity_id'))
+      		->execute();
+		*/
+		$num = db_select('entity_subqueue__items', 'esi')
+      		->condition('esi.entity_id', 'edit_functions', '=')
+      		->fields('esi', array('entity_id'))
+      		->execute()->fetchField();
+			
+		//drupal_set_message("num:".$num);
+      	//$num = $query->rowCount();
+	  	/*
+		if ($num==0) {
+			$sql="INSERT INTO `entity_subqueue__items` (`bundle`, `deleted`, `entity_id`, `revision_id`, `langcode`, `delta`, `items_target_id`) VALUES
+('about_links', 0, 'about_links', 'about_links', 'en', 0, '5'),
+('about_links', 0, 'about_links', 'about_links', 'en', 1, '8'),
+('about_links', 0, 'about_links', 'about_links', 'en', 2, '1064'),
+('edit_functions', 0, 'edit_functions', 'edit_functions', 'en', 0, '1065'),
+('edit_functions', 0, 'edit_functions', 'edit_functions', 'en', 1, '1063'),
+('edit_functions', 0, 'edit_functions', 'edit_functions', 'en', 2, '1061'),
+('guidancetools', 0, 'guidancetools', 'guidancetools', 'en', 0, '8'),
+('guidancetools', 0, 'guidancetools', 'guidancetools', 'en', 1, '9'),
+('guidancetools', 0, 'guidancetools', 'guidancetools', 'en', 2, '10'),
+('knowledge_links', 0, 'knowledge_links', 'knowledge_links', 'en', 0, '6'),
+('knowledge_links', 0, 'knowledge_links', 'knowledge_links', 'en', 1, '12'),
+('knowledge_links', 0, 'knowledge_links', 'knowledge_links', 'en', 2, '9'),
+('knowledge_links', 0, 'knowledge_links', 'knowledge_links', 'en', 3, '11'),
+('knowledge_links', 0, 'knowledge_links', 'knowledge_links', 'en', 4, '932'),
+('slideshow', 0, 'slideshow', 'slideshow', 'en', 0, '2'),
+('slideshow', 0, 'slideshow', 'slideshow', 'en', 1, '3'),
+('slideshow', 0, 'slideshow', 'slideshow', 'en', 2, '1327'),
+('slideshow', 0, 'slideshow', 'slideshow', 'en', 3, '1003'),
+('solutions', 0, 'solutions', 'solutions', 'en', 0, '5'),
+('solutions', 0, 'solutions', 'solutions', 'en', 1, '6'),
+('solutions', 0, 'solutions', 'solutions', 'en', 2, '7'),
+('taxonomy', 0, 'taxonomy', 'taxonomy', 'en', 0, '11'),
+('taxonomy', 0, 'taxonomy', 'taxonomy', 'en', 1, '12'),
+('taxonomy', 0, 'taxonomy', 'taxonomy', 'en', 2, '932');";
+			
+			$result = db_query($sql);
+		}
+*/
+	}
+	catch (Exception $e) {
+		//drupal_set_message ('Caught exception: '. $e->getMessage(), 'error');
+		$message = 'Caught exception Insert entity_subqueue__items: '. $e->getMessage();
+		\Drupal::logger('pos_default_content')->error($message);
+	}
+	
+	try {
+		$query = \Drupal::entityQuery('file');
+		$query->condition('type', 'undefined');
+		$entities_ids = $query->execute();
+		foreach ($entities_ids as $entity ) {
+
+    		$file = \Drupal\file\Entity\File::load(($entity));
+			//drupal_set_message ($entity, 'error');
+			
+			
+			if ($file->get('filemime')->value =='application/octet-stream') {
+
+				$file->type='document';
+			}
+			
+			$file->save();
+				
+		}	
+	}
+	
+
+	catch (Exception $e) {
+		//drupal_set_message ('Caught exception: '. $e->getMessage(), 'error');
+		$message = 'Caught exception: '. $e->getMessage();
+		\Drupal::logger('pos_default_content')->error($message);
+	}
+	
+
+}
