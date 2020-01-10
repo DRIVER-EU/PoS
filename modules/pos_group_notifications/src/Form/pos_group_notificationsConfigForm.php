@@ -701,7 +701,130 @@ class pos_group_notificationsConfigForm extends ConfigFormBase {
 		); 
 
 		/*******************/
-					
+
+		
+		/********* expiring email notifications **************/
+
+		$form['group8'] = array(
+		  '#type' => 'details',
+		  '#title' => t('Expiring notifications'),
+		  '#open' => TRUE,
+		  //'#required'      => TRUE,
+		  '#group' => 'vertical_tabs',
+		);
+				
+		$form['group8']['expiringnotificationintroduction'] = array(
+			'#type' => 'markup',
+			'#prefix' => '</br>',
+			'#markup' => t('Here you can configure which content types and which group types will be take into account to send expiration emails. When the system finds some content where their updated date was older than the expiration date configured (latests updated date + number of months configured into expiration time < today), it will send a notification to the author of the item. This process will be executed one time per month.'),
+			'#suffix' => '</br>',
+			//'#tree' => true,
+		);
+
+		$optionsMonths = [];
+		for ($i = 0; $i <= 24; $i++) {
+			$extraLabel = 'months';
+			if ($i==0) {
+				$extraLabel = 'never';
+			}
+			else if ($i==1) {
+				$extraLabel = 'month';	
+			}
+			
+			if ($i==0) {
+				$optionsCT[$i] = t($extraLabel);
+			}
+			else {
+				$optionsCT[$i] = $i." ".t($extraLabel);	
+			}
+    		
+		}
+		
+		$default_pos_group_notifications_expiration_months = $config->get('pos_group_notifications_expiration_months'); 
+		
+ 		$form['group8']['pos_group_notifications_expiration_months'] = array(
+			'#type'          => 'select',
+			'#title'         => t('Expiration time'),
+			'#description' => t('Select the expiration time for the content. If you select never, items will never be processed as expired.'),
+			'#required'      => TRUE,	
+			'#options' => $optionsCT,
+			'#default_value' => $default_pos_group_notifications_expiration_months,	
+		);
+		
+				
+		$form['group8']['nodes']  = array(
+		  '#type' => 'details',
+		  '#title' => t("Content types"),
+		  '#description' => t('Select the content types that the system will take into account.'),
+		  '#open' => FALSE
+		);
+		
+		$node_types = \Drupal\node\Entity\NodeType::loadMultiple();
+		// If you need to display them in a drop down:
+		$optionsCT = [];
+		foreach ($node_types as $node_type) {
+  			$optionsCT[$node_type->id()] = $node_type->label();
+		}
+		
+		$default_pos_group_notifications_expiration_node_types = $config->get('pos_group_notifications_expiration_node_types');
+
+ 		$form['group8']['nodes']['pos_group_notifications_expiration_node_types'] = array(
+			'#type'          => 'checkboxes',
+			'#title'         => t('Content types'),
+			//'#description' => t('Select the CT you wish.'),
+			'#required'      => FALSE,	
+			'#options' => $optionsCT,	
+			'#default_value' => $default_pos_group_notifications_expiration_node_types,	
+		);
+
+		$form['group8']['groups']  = array(
+		  '#type' => 'details',
+		  '#title' => t("Groups"),
+		  '#description' => t('Select the group types that the system will take into account.'),
+		  '#open' => FALSE
+		);		
+						
+		$group_types = \Drupal\group\Entity\GroupType::loadMultiple();
+		// If you need to display them in a drop down:
+		$optionsGT = [];
+		foreach ($group_types as $group_type) {
+  			$optionsGT[$group_type->id()] = $group_type->label();
+		}
+		
+		$default_pos_group_notifications_expiration_group_types = $config->get('pos_group_notifications_expiration_group_types');
+
+ 		$form['group8']['groups']['pos_group_notifications_expiration_group_types'] = array(
+			'#type'          => 'checkboxes',
+			'#title'         => t('Groups types'),
+			//'#description' => t('Select the group you wish.'),
+			'#required'      => FALSE,	
+			'#options' => $optionsGT,	
+			'#default_value' => $default_pos_group_notifications_expiration_group_types,
+		);
+
+		$pos_group_notifications_expiration_subject = $config->get('pos_group_notifications_expiration_subject');
+		$form['group8']['pos_group_notifications_expiration_subject'] = array(
+			'#type' => 'textfield',
+			'#title' => t('Subject e-mail'),
+			'#maxlength' => 128,
+			'#description' => t('[site:name] will be replaced by the appropriate value.'),
+			'#required'      => TRUE,
+			'#default_value' => $pos_group_notifications_expiration_subject,
+		);
+		
+		$default_body_value = $config->get('pos_group_notifications_expiration_body'); 
+		
+		$form['group8']['pos_group_notifications_expiration_body'] = array(
+			'#type' => 'textarea',
+			'#rows'=> 7,
+			'#title' => t('Body e-mail'),
+			'#description' => t('[user:display-name], [item:url] (is the label + the url) and [site:name] will be replaced by the appropriate values.'),
+			'#required'      => TRUE,
+			'#default_value' => $default_body_value,
+		); 
+
+		/********************/
+							
 		return $form;
 	}
 
@@ -848,6 +971,16 @@ class pos_group_notificationsConfigForm extends ConfigFormBase {
 		$config->set('pos_group_notifications_group_validation_configgroups', $form_state->getValue('pos_group_notifications_group_validation_configgroups'));
 		//$values = $form_state->getValues();
 		//drupal_set_message(print_r($values['pos_group_notifications_group_validation_configgroups'],true));
+		
+		
+		//g8		
+		$config->set('pos_group_notifications_expiration_months', $form_state->getValue('pos_group_notifications_expiration_months'));
+		$config->set('pos_group_notifications_expiration_node_types', $form_state->getValue('pos_group_notifications_expiration_node_types'));		
+		$config->set('pos_group_notifications_expiration_group_types', $form_state->getValue('pos_group_notifications_expiration_group_types'));
+		
+		$config->set('pos_group_notifications_expiration_subject', $form_state->getValue('pos_group_notifications_expiration_subject'));
+		$config->set('pos_group_notifications_expiration_body', $form_state->getValue('pos_group_notifications_expiration_body'));
+		
 		
 		$config->save(); // save data in pos_group_notifications.settings
 		

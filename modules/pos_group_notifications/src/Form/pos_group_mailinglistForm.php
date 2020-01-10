@@ -19,6 +19,16 @@ class pos_group_mailinglistForm extends ConfigFormBase {
 
 	public function buildForm(array $form, FormStateInterface $form_state) {
 
+		$num = db_select('queue', 'q')
+      		->condition('q.name', 'pos_group_notifications_mailing_list', '=')
+      		->fields('q', array('item_id'))
+      		->countQuery()->execute()->fetchField();
+		
+		if ($num>0) {		
+			drupal_set_message(t('There are %num emails pending to be sended in the next cron execution.', array('%num' => $num)),'warning');
+		}
+		
+		
 		$config = $this->config('pos_group_notifications.settings');  // store data in pos_group_notifications.settings
 		$form = parent::buildForm($form, $form_state);
 
@@ -504,27 +514,30 @@ class pos_group_mailinglistForm extends ConfigFormBase {
 				foreach ($members as $member) {
 					$user = $member->getUser();
 					$uid = $user->get('uid')->value;
+					$userStatus = $user->get('status')->value;
 					
 					$uroles = $member->getRoles();
-					//drupal_set_message('------------uid->'.$uid.'-----uroles->'.$uroles.'<--------pos_group_roles_type_selection-->'.$pos_group_roles_type_selection.'<--', 'error');
+					//drupal_set_message('------------uid->'.$uid.'---userStatus->'.$userStatus.'<-----uroles->'.$uroles.'<--------pos_group_roles_type_selection-->'.$pos_group_roles_type_selection.'<--', 'error');
 					
 					$validUser = False;
-					foreach ($uroles as $roleK => $roleV) {
-						
-						//$roleK = role of the user
-						//we check if this role is in the list of $pos_group_type_selection
-						foreach ($pos_group_roles_type_selection as $selection) {
-							
-							if (strpos($roleK, $selection) !== false) {
-								$validUser = True;
-							}
-							
-							
-						}
-						 
-						//drupal_set_message('------------uid->'.$uid.'-----role->'.$roleK.'<--------', 'error');
-					}
 					
+					if ($userStatus==1) {
+						foreach ($uroles as $roleK => $roleV) {
+							
+							//$roleK = role of the user
+							//we check if this role is in the list of $pos_group_type_selection
+							foreach ($pos_group_roles_type_selection as $selection) {
+								
+								if (strpos($roleK, $selection) !== false) {
+									$validUser = True;
+								}
+								
+								
+							}
+							 
+							//drupal_set_message('------------uid->'.$uid.'-----role->'.$roleK.'<--------', 'error');
+						}
+					}
 					if ($validUser) {
 						//drupal_set_message('----->'.$uid.'<-------VALID USER--------', 'error');
 						if (!in_array($uid, $finalUsersArray)) {
@@ -608,9 +621,34 @@ class pos_group_mailinglistForm extends ConfigFormBase {
 			
 			$body_email  = html_entity_decode( $body_email);
 			$body_email = render($body_email);
-		
-			pos_send_custom_email($mail, $subject_email, $body_email, $keyEmail);
+			//drupal_set_message($cntEmailsSended."-".date("h:i:sa")."-".$mail, 'error');
+			
+			//if we wish to send email in the moment to save the form, set false the next variable
+			$sendEmailsByCron = True;
+			
+			if ($sendEmailsByCron==False) {
+				pos_send_custom_email($mail, $subject_email, $body_email, $keyEmail);	
+			}
+			else {
+				$queue_factory = \Drupal::service('queue');
+ 				/** @var QueueInterface $queue */
+ 				$queue = $queue_factory->get('pos_group_notifications_mailing_list'); 
+    			//$queue->createItem($data);
+    		
+    			$data['to'] = $mail;
+    			$data['subject_email'] = $subject_email;
+    			$data['body_email'] = $body_email;
+    			$data['keyEmail'] = $keyEmail;
+				
+    			$queue->createItem($data);				
+			}
+			
+			
+
+			
+						
 			$cntEmailsSended = $cntEmailsSended + 1;
+			
 		}
 
 
@@ -638,13 +676,14 @@ class pos_group_mailinglistForm extends ConfigFormBase {
 		$link = \Drupal\Core\Url::fromRoute('entity.node.canonical', ['node' => $nid])->toString();
 
 		if ($cntEmailsSended>0) {
-			drupal_set_message(t('The e-mails have been sent.'));
+			//drupal_set_message(t('The e-mails have been sent.'));
+			drupal_set_message(t('The emails will be sent by the cron task in the next execution.'));
 		}
 		else {
 			drupal_set_message(t('There are not users with this filter conditions.'));
 		}
 
-		drupal_set_message(t('The e-mail has been published <a href="@link">here</a>.', array('@link' => $link)));
+		drupal_set_message(t('The email has been published <a href="@link">here</a>.', array('@link' => $link)));
 		
 	    //$messenger = \Drupal::messenger();
 	    //$messenger->addMessage('Title: ');

@@ -154,17 +154,18 @@ function pos_group_notifications_mail_alter(&$message) {
 
 function pos_group_notifications_mail($key, &$message, $params) {
 		
-	//drupal_set_message("---pos_group_notifications_mail---");
+	//drupal_set_message("---pos_group_notifications_mail---", 'error');
 	
 	$options = array(
 		'langcode' => $message['langcode'],
 	);
 
-	//drupal_set_message("---key---".$key);
+	//drupal_set_message("---key---".$key, 'error');
 	switch ($key) {
 		case 'pos_group_notifications_mailing_list':
 			//drupal_set_message("---pos_group_notifications_mail 1---".$params['context']['message'], 'error');
 			$message['from'] = \Drupal::config('system.site')->get('mail');
+			$message['reply-to'] = \Drupal::config('system.site')->get('mail');
 	 		$message['headers']['Content-Type'] = 'text/html; charset=UTF-8; format=flowed; delsp=yes';	 
 			$message['headers']['MIME-Version'] = '1.0';
      		$message['subject'] = $params['context']['subject'];
@@ -687,7 +688,9 @@ function pos_send_custom_email($to, $subject_email, $body_email, $key) {
 
 			$message .= "</br>";
 			$message .= '</br>-To:'.$to_email." </br>-Subject:".$subject_email."</br>-Body:</br>".$body_email;
-			\Drupal::logger('pos_group_notifications')->error($message);
+			
+			//uncomment next line if you wish to add a log
+			//\Drupal::logger('pos_group_notifications')->error($message);
 		}
 	}
 }
@@ -1415,6 +1418,7 @@ function pos_group_notifications_cron() {
 }
 
 function pos_group_notifications_start_cron_tasks() {
+			
 	
 	//drupal_set_message("***----".rand(1, 150)."--hola 1--pos_group_notifications_start_cron_tasks", 'error');
 
@@ -1475,6 +1479,10 @@ function pos_group_notifications_start_cron_tasks() {
 		
 		//if (1==1) {
 		if ($sendReminder==True) {
+			
+			//send expiring items
+			pos_group_notifications_send_emails_expiring_items();
+			
 			//drupal_set_message('Sending REMINDER', 'error');
 			$first_day_of_the_month = date('Y-m-01');
 			
@@ -1539,6 +1547,7 @@ function pos_group_notifications_start_cron_tasks() {
 	//drupal_set_message("***----".rand(1, 150)."--pos_group_notifications_cron pos_group_notifications_group_validation_error_enabled C--", 'error');	
 	
 	//drupal_set_message("***----".rand(1, 150)."--hola 2--pos_group_notifications_start_cron_tasks", 'error');
+		
 }
 
 
@@ -2306,3 +2315,147 @@ function pos_group_notifications_send_emails_solution_trial_not_published() {
   
 	//drupal_set_message("***----".rand(1, 150)."--END pos_group_notifications_send_emails_solution_trial_not_published.---", 'error');
 } 
+
+
+function pos_group_notifications_send_emails_expiring_items() {
+	//drupal_set_message("***----".rand(1, 150)."--Start pos_group_notifications_send_emails_expiring_items.---", 'error');
+	
+	$config =  \Drupal::config('pos_group_notifications.settings');
+	$pos_group_notifications_expiration_months = $config->get('pos_group_notifications_expiration_months');
+	
+	//drupal_set_message("***----".rand(1, 150)."pos_group_notifications_expiration_months:".$pos_group_notifications_expiration_months, 'error');
+	
+	if ($pos_group_notifications_expiration_months>0) {
+		//drupal_set_message("Dins!!!", 'error');
+
+		$system_site_config = \Drupal::config('system.site');
+ 		$site_email = $system_site_config->get('mail');
+		$site_name = $system_site_config->get('name');
+				
+		$pos_group_notifications_expiration_subject = $config->get('pos_group_notifications_expiration_subject');
+		$subject_email = str_replace("[site:name]", $site_name, $pos_group_notifications_expiration_subject);
+		
+		$pos_group_notifications_expiration_body = $config->get('pos_group_notifications_expiration_body');
+		$key = 'pos_group_notification_expire_item';
+
+	
+		global $base_url;
+		$host = $base_url;	
+	
+		$now = new DrupalDateTime('now');
+		$now->setTimezone(new \DateTimeZone(DATETIME_STORAGE_TIMEZONE));
+		//drupal_set_message("now:".$now);		
+		$expirationDate = $now->modify('-'.$pos_group_notifications_expiration_months. 'month');		
+		//drupal_set_message("now -".$pos_group_notifications_expiration_months." months:".$expirationDate);		
+		//drupal_set_message("DATETIME_DATETIME_STORAGE_FORMAT:".DATETIME_DATETIME_STORAGE_FORMAT);
+		//drupal_set_message("expirationDate in format:".$expirationDate->format(DATETIME_DATETIME_STORAGE_FORMAT));	
+		//drupal_set_message("expirationDate timestamp :".$expirationDate->getTimestamp());
+		
+		
+		//we need to recover all CT that belongds to the list of CT selected
+		$pos_group_notifications_expiration_node_types = $config->get('pos_group_notifications_expiration_node_types');
+		
+		foreach ($pos_group_notifications_expiration_node_types as $ct_k=>$ct_v) {			
+			if ($ct_k===$ct_v) {
+				//this means that the CT is selected
+				//drupal_set_message("***----".rand(1, 150)."ct_k:".$ct_k."----value:".$ct_v, 'error');
+				
+				$query = \Drupal::entityQuery('node');
+				$query->condition('status', 1);
+				$query->condition('type', $ct_k);
+				//$query->condition('changed', $expirationDate->format(DATETIME_DATETIME_STORAGE_FORMAT), '<=');
+				$query->condition('changed', $expirationDate->getTimestamp(), '<=');
+				$entity_ids = $query->execute();
+				$nodes = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($entity_ids);
+				
+				foreach ($nodes as $n_k=>$n_v) {
+					//drupal_set_message("***----".rand(1, 150)."n_k:".$n_k."--title:".$n_v->get('title')->value."---last update date:".$n_v->getChangedTime()."---uid:".$n_v->get('uid')->target_id, 'error');
+					
+					$account = \Drupal\user\Entity\User::load($n_v->get('uid')->target_id); // pass your uid
+     				$userName = $account->getUsername();
+					$realname = $account->get('field_real_name')->value;
+					$userMail = $account->get('mail')->value; 
+					
+					//drupal_set_message("***----".rand(1, 150)."n_k:".$n_k."--title:".$n_v->get('title')->value."---last update date:".$n_v->getChangedTime()."---uid:".$n_v->get('uid')->target_id."--userName:".$userName."---userMail:".$userMail."---realname:".$realname, 'error');
+					
+					$url_item = '<a href="'.$host.'/node/'.$n_k.'">'.$n_v->get('title')->value.'</a>';
+					
+					$body_email = $pos_group_notifications_expiration_body;
+			
+					$body_email = str_replace("[user:display-name]", $realname, $body_email);
+					$body_email = str_replace("[site:name]", $site_name, $body_email);
+					
+					$body_email = str_replace("[item:url]", $url_item, $body_email);
+					
+					
+					$body_email  = html_entity_decode( $body_email);
+					$body_email = render($body_email);			
+				
+					//drupal_set_message("***".rand(1, 150)."----------->Before pos_send_custom_email<-------", 'error');
+					pos_send_custom_email($userMail, $subject_email, $body_email, $key);
+				
+				}
+				
+				
+			}
+		}
+		
+		//we need to recover all groups that belongds to the list of groups selected
+		$pos_group_notifications_expiration_group_types = $config->get('pos_group_notifications_expiration_group_types');
+
+		foreach ($pos_group_notifications_expiration_group_types as $g_k=>$g_v) {
+			if ($g_k===$g_v) {
+				//this means that the group is selected
+				//drupal_set_message("***----".rand(1, 150)."g_k:".$g_k."----value:".$g_v, 'error');
+				
+				$queryG = \Drupal::entityQuery('group');
+				//$queryG->condition('status', 1);
+				$queryG->condition('type', $g_k);
+				$queryG->condition('changed', $expirationDate->getTimestamp(), '<=');
+				$entity_ids = $queryG->execute();
+				
+				foreach ($entity_ids as $entity_k=>$entity_v) {
+
+					$group = Drupal\group\Entity\Group::load($entity_k);				
+					$gid = $group->id[0]->value;
+					$glabel = $group->label[0]->value;
+					$gauthor = $group->uid[0]->target_id;
+					
+					$account = \Drupal\user\Entity\User::load($gauthor); // pass your uid
+     				$userName = $account->getUsername();
+					$realname = $account->get('field_real_name')->value;
+					$userMail = $account->get('mail')->value; 
+					
+					//drupal_set_message("***----".rand(1, 150)."gid:".$gid."--title:".$glabel."------uid:".$gauthor."--userName:".$userName."---userMail:".$userMail."---realname:".$realname, 'error');
+					
+					$url_item = '<a href="'.$host.'/group/'.$gid.'">'.$glabel.'</a>';
+					
+					$body_email = $pos_group_notifications_expiration_body;
+			
+					$body_email = str_replace("[user:display-name]", $realname, $body_email);
+					$body_email = str_replace("[site:name]", $site_name, $body_email);
+					
+					$body_email = str_replace("[item:url]", $url_item, $body_email);
+					
+					
+					$body_email  = html_entity_decode( $body_email);
+					$body_email = render($body_email);			
+				
+					//drupal_set_message("***".rand(1, 150)."----------->Before pos_send_custom_email<-------", 'error');
+					pos_send_custom_email($userMail, $subject_email, $body_email, $key);
+
+					
+					//drupal_set_message("***----".rand(1, 150)."gid:".$gid."--glabel:".$glabel."---gauthor:".$gauthor."<----", 'error');
+				}
+				
+				
+			}
+		}
+				
+	}
+	else {
+		//drupal_set_message("expiration email disabled!!!", 'error');
+	}
+	
+	//drupal_set_message("***----".rand(1, 150)."--END pos_group_notifications_send_emails_expiring_items.---", 'error');
+}
