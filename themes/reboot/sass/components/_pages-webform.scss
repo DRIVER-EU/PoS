@@ -1,0 +1,36 @@
+.webform-submission-form {
+  label {
+  
+  }
+  .form-item {
+    display:flex;
+    margin-right:-15px;
+    margin-left:-15px;
+    margin:0 -15px;
+    padding:10px 0;
+    .form-actions {
+      
+    }
+      
+    & > * {
+      margin-right:15px;
+      margin-left:15px;
+      margin:0 15px;
+    }
+    label {
+      flex-basis:8em;
+      text-align:right;
+      font-weight:600;
+  
+    }
+    // border-bottom:1px solid $gris_80;
+    &:not(:last-of-type) {
+      
+    }
+    
+    &.hidden {
+      display:none;
+    }
+  }
+}
+

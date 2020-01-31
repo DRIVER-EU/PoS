@@ -1,0 +1,166 @@
+body.path-frontpage {
+  .btn-helpdesk {
+    // @include menu-icon();
+    // position:relative;
+    
+    @include menu-icon();
+    padding-left:2.5em;
+    &:before {
+      background-image:url(../images/icons/conversation.svg);
+      width:1.5em;
+      height:1.5em;
+      top:2px;
+      left:10px;
+    }
+    
+  }
+  
+  .help-icon {
+    // float:left;
+    width:100px;
+    height:100px;
+    // background:red;
+    margin:0 auto;
+    background-image:url(../images/icons/help4.svg);
+    background-size:contain;
+    
+  }
+  .content {
+    max-width:$device;
+    margin:0 auto;
+    // text-align:center;
+  }
+  
+}
+
+#block-views-block-front-page-views-front-knowledge-block {
+  background:$gris_95;
+
+}
+
+
+body.path-frontpage {
+  .row:nth-child(even) {
+  // background:white;
+  
+  padding-top:3em;
+  padding-bottom:3em;
+  }
+  .block-views-blockfront-solutions-block-3,
+  .block-views-blockfront-solutions-block-4 {
+
+    background-color:$gris_93;
+  }
+  
+  .block-views-blockfront-solutions-block-1 {
+  // background:cyan;
+    
+  }
+  
+}
+
+
+body.path-frontpage main {
+  max-width:100%;
+  .block {
+    padding-top:4em;
+    padding-bottom:4em;
+    
+    
+  }
+  .block-views-blockslideshow-block-1 {
+    padding-top:0;
+  }
+  .block-header {
+     max-width:$device;
+     margin:0 auto;
+     
+      max-width:$device_4;
+    margin:0 auto;
+    margin-bottom:2em;
+  }
+   h2 {
+    text-align:center;
+    // border-bottom:1px solid black;
+    padding:5px 3em .5em;
+    padding:5px 3em 0;
+   
+    // background:red;
+   }
+   hr {
+    // border:1px solid navy;
+    // max-width:$device_4;
+    height: 1px;
+    border: 0;
+    border-top: 1px solid #ccc;
+    
+    padding: 0;
+    
+   }
+  .field--name-body {
+    max-width:$device;
+    margin:0 auto;
+  }
+  
+  
+  
+  #block-reboot-page-title,
+  #block-reboot-local-tasks {
+    display:none;
+  }
+  
+  .view {
+    max-width:$device;
+    margin:0 auto;
+  }
+
+}
+
+
+
+.block-views-blockslideshow-block-1 {
+  // background:$bk;
+  // color:white;
+  a {
+    // color:white;
+  }
+  
+}
+
+
+
+#block-frontbanner1 {
+  
+  
+  h1 {
+    font-size:2.7em;
+    max-width:$device_7;
+    margin:1em auto;
+    
+  }
+}
+
+#block-frontbanner1,
+#block-aboutus {
+  text-align:center;
+}
+
+#block-aboutus {
+  background:$gris_30;
+  .field--name-body,
+  .block-header {
+     
+      color:white;
+      a {
+        color:white;
+      }
+      
+      h2 {
+        border-bottom-color:$gris_90;
+      }
+  }
+
+  
+  
+ 
+}

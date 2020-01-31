@@ -1,0 +1,169 @@
+ul.links-translations li.flagli .contextual-editing {
+  float:right;
+  margin-left: 3px;
+}
+
+ul.links-translations li.flagli .contextual-editing ul.dropbutton a {
+  font-size: small;
+}  
+
+ul.links-translations {
+  list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+ul.links-translations li {
+  float: left;
+}
+
+ul.links-translations li a,
+ul.links-translations li span {
+  margin-left: 3px;
+}
+
+ul.links-translations li.dropbutton-action {
+  float: none;
+}
+
+ul.links-translations span.pl:before {
+  content: url(../images/flags/pl.png);
+}
+
+ul.links-translations span.de:before {
+  content: url(../images/flags/de.png);
+}
+
+ul.links-translations span.nl:before {
+  content: url(../images/flags/nl.png);
+}
+
+ul.links-translations span.fr:before {
+  content: url(../images/flags/fr.png);
+}
+
+ul.links-translations span.en:before {
+  content: url(../images/flags/en.png);
+}
+
+ul.links-translations span.it:before {
+  content: url(../images/flags/it.png);
+}
+
+ul.links-translations span.es:before {
+  content: url(../images/flags/es.png);
+}
+
+.messages-language-flags {
+    padding: 15px 5px 5px 25px;
+    margin-left: 10px;
+}
+
+.ui-dialog-content .diff-header,
+.displayDifferences .dialog-off-canvas-main-canvas #block-reboot-content .diff-header,
+.ui-dialog-content .diff-controls,
+.displayDifferences .dialog-off-canvas-main-canvas #block-reboot-content .diff-controls
+{
+    display: none;
+}
+
+.dialog-off-canvas-main-canvas .ajax-links-api-content .diff-header,
+.dialog-off-canvas-main-canvas .ajax-links-api-content .diff-controls {
+    display: none;  
+}
+
+.dialog-off-canvas-main-canvas .ajax-links-api-content .diff-responsive-table-wrapper {
+  border: 1px solid #333333;
+  background: #ffffff;
+}
+
+.ui-dialog-content #btndifferences {
+    text-decoration: none;
+    border: 1px solid #333333;
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: #f6922e;
+    color: #ffffff;
+}
+
+.displayDifferences .dialog-off-canvas-main-canvas #block-reboot-content .diff-responsive-table-wrapper {
+  border: 1px solid #333333;
+  background: #ffffff;
+}
+
+.displayDifferences .dialog-off-canvas-main-canvas #block-reboot-content .diff-responsive-table-wrapper .contextual-region {
+  padding: 7px;
+}
+
+.displayDifferences .dialog-off-canvas-main-canvas #block-reboot-content .diff-responsive-table-wrapper *:not(ins),
+.displayDifferences .dialog-off-canvas-main-canvas #block-reboot-content .diff-responsive-table-wrapper *:not(del)
+ {
+  background: #ffffff;
+}
+
+.displayDifferences .dialog-off-canvas-main-canvas #block-reboot-content .diff-responsive-table-wrapper ins {
+    background-color: #cfc;
+}
+
+.displayDifferences .dialog-off-canvas-main-canvas #block-reboot-content .diff-responsive-table-wrapper del {
+    background-color: #fcc;
+}
+
+#drupal-off-canvas #displayDifferences * {
+    color: #000000;
+}
+
+.ui-dialog-content #btnshowdifferences,
+#btnshowdifferences,
+.ui-dialog-content #btnhidedifferences,
+#btnhidedifferences {
+    text-decoration: none;
+    border: 1px solid #333333;
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 6px;
+    background: #f6922e;
+    color: #ffffff;
+}
+
+.ui-dialog-content .vertical-tabs {
+    margin: 1em 1em 1em 1em;
+    border: 1px solid #ccc;
+}
+
+.ui-dialog-content .vertical-tabs__panes {
+  margin: 0em 1em 1em 15em;
+  border: 1px solid #ccc;
+}
+
+#drupal-off-canvas details.vertical-tabs__pane {
+    margin: 0 5px;
+    border-width: 0;
+}
+
+
+#drupal-off-canvas .vertical-tabs__menu-item a {
+    display: block;
+    padding: 10px 15px 15px;
+    text-decoration: none;
+    border-bottom: 1px solid #b3b2ad;
+    background-color: #f2f2f0;
+    text-shadow: 0 1px hsla(0, 0%, 100%, 0.6);
+}
+
+#drupal-off-canvas .vertical-tabs__menu-item.is-selected a, #drupal-off-canvas .vertical-tabs__menu-item a:hover, #drupal-off-canvas .vertical-tabs__menu-item a:focus {
+    background: #fcfcfa;
+    text-shadow: none;
+}
+
+#drupal-off-canvas .vertical-tabs__menu-item a strong {
+  color: #004f80;
+  background-color: #f2f2f0;
+}
+
+#drupal-off-canvas .vertical-tabs__menu-item.is-selected a strong, #drupal-off-canvas .vertical-tabs__menu-item a:hover strong, #drupal-off-canvas .vertical-tabs__menu-item a:focus strong {
+  color: #004f80;
+    background: #fcfcfa;
+}

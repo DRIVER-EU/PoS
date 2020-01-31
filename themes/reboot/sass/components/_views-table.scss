@@ -1,0 +1,22 @@
+.views-table {
+  font-size:.875em;
+  color:$claro;
+  // background:red;
+  width:100%;
+  td,tr {
+    padding:3px 5px;
+  }
+  td {
+    vertical-align:top;
+    
+  }
+  td.is-active {
+    background:transparentize($gris_30, .95);
+  }
+  tbody {
+    tr {
+      // border-bottom:1px solid $gris_80;
+      background:linear-gradient(to top, $gris_95,transparent);
+    }
+  }
+}

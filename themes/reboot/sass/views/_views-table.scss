@@ -1,0 +1,46 @@
+.views-table {
+  font-size:.875em;
+  color:$claro;
+  // background:red;
+  width:100%;
+  th {
+    text-align:left;
+    font-weight:600;
+    color:black;
+  }
+  thead {
+    background:$gris_90;
+  }
+  td,th {
+    padding:3px 5px;
+  }
+  td {
+    vertical-align:top;
+    
+  }
+  td.is-active {
+    background:transparentize($gris_30, .95);
+  }
+  tbody {
+    tr {
+      // border-bottom:1px solid $gris_80;
+      // background:linear-gradient(to top, $gris_95,transparent);
+      &:nth-child(odd) {
+        background:transparentize($gris_95,.5);
+        background:$gris_96;
+
+      }
+    }
+  }
+  .views-field-title a ,
+  a {
+    color:$general;
+    text-decoration:underline;
+    text-decoration-color:$gris_70;
+  }
+  .views-field-title a {
+    font-weight:600;
+  
+
+  }
+}

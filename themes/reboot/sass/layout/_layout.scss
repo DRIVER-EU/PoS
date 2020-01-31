@@ -1,0 +1,174 @@
+
+
+body.not-front {
+  .layout-container {
+  // margin:3em;
+  // padding:15px;
+  }
+  
+  
+}
+body {
+  
+}
+
+
+
+
+footer .region-footer {
+  
+  max-width:$device_max;
+  margin-right:auto;
+  margin-left:auto;
+}
+.layout-container {
+  padding:1em;
+  @media(min-width:$device) {
+    padding:0;
+  }
+}
+.layout-content {
+  padding-top:2em;
+  padding-bottom:2em;
+}
+
+body.path-frontpage {
+  .layout-content {
+    padding-top:0;
+  }
+}
+.region-notification .views-field-nothing .field-content,
+.region-highlighted,
+main,
+// .block-system-main-block,
+.region-menu-second .menu,
+.block-local-tasks-block
+ {
+  max-width:$device;
+  margin-right:auto;
+  margin-left:auto;
+  
+}
+
+body.path-gt,
+body.path-all-trials-wide {
+  .block-system-main-block, 
+  main {
+    max-width:100%;
+    
+    @media (min-width:$device) {
+      // margin:0 30px;
+    }
+    
+    
+  }
+  
+  
+}
+
+
+
+
+#main-content {
+  display:none;
+}
+body.body-sidebar-left {
+  main {
+    display: grid;
+
+    grid-gap: 20px;
+  }
+  .left-content {
+    display:contents;
+  }
+  .layout-sidebar-top {
+    order:-1;
+  }
+}
+
+
+
+
+// .layout-content {
+//   background:INDIANRED;
+// }
+// .layout-sidebar-first {
+//   background:cyan;
+//  }
+//  .layout-sidebar-top {
+//    background:SALMON;
+//  }
+
+@media (min-width:$device) {
+
+  
+  body.body-sidebar-first {
+    .region-notification .views-field-nothing .field-content,
+    main, .region-highlighted,  {
+    max-width:$device_max;
+    }
+    main {
+      
+      // grid-template-columns: repeat(12, 1fr);
+      grid-template-columns: 210px 1fr;
+      grid-gap: 30px;
+      
+      
+    // background:$gris_80;
+    & > * {
+      // background:$gris_95;
+    }
+    
+    }
+
+    .left-content {
+      display:block;
+      order:-1;
+      // overflow:hidden;
+    }
+    .layout-content {
+      //  grid-column: 5 / span 8;
+      // overflow:hidden;
+
+    }
+    .layout-sidebar-first {
+     order: -1;
+        // grid-column:span 2 ;
+
+    }
+    
+    &.path-group {
+     .layout-content {
+      //  grid-column: 3 / span 11;
+
+      }
+    }
+  }
+  body.path-pos,
+  body.path-gt {
+    .region-highlighted {
+      max-width:100%;
+      padding-right:5%;
+      padding-left:5%;
+
+    }
+    main {
+      // width:100%;
+      max-width:95%;
+      // background:red;
+      // padding-right:30px;
+      // padding-left:30px;
+    }
+    .layout-content {
+      //  grid-column: span 10;
+
+    }
+  
+  }
+
+}
+#main-content {
+  // display:none;
+}
+
+

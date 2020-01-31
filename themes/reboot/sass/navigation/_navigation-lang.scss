@@ -1,0 +1,44 @@
+#block-languageswitcher {
+  h2 {
+    display:none;
+  }
+  .links {
+    @include reset-list();
+    // display:flex;
+    // flex-wrap: wrap;
+    a {
+      display:block;
+      text-decoration:none;
+      padding:10px;
+      padding-left:30px;
+      background:url(../images/flags/en.png);
+      background-repeat:no-repeat;
+      background-position:left center;
+      color:$general;
+      font-size:.8125em;
+      text-transform: uppercase;
+      &.de {
+        
+      }
+    }
+    .de a {background-image:url(../images/flags/de.png);}
+    .fr a {background-image:url(../images/flags/fr.png);}
+    .nl a {background-image:url(../images/flags/nl.png);}
+    .pl a {background-image:url(../images/flags/pl.png);}
+    .it a {background-image:url(../images/flags/it.png);}
+  }
+
+  
+  @media(min-width:$device) {
+    position:absolute;
+    top:30px;
+    right:30px;
+    padding:10px;
+    background:$gris_98;
+    border-radius:6px;
+    border:1px solid $gris_70;
+    box-shadow:4px 4px 8px transparentize(black,.7);
+    z-index:2;
+  }
+  
+}

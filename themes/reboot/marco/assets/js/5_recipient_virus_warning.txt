@@ -1,0 +1,12 @@
+
+McAfee - UNWANTED FILE DETECTED
+
+A file has been blocked by a file-filtering rule. 
+Rule: 'Atos File Extension Restriction Policy'
+Context: 'jquery.flexslider.js'
+Disallowed due to filename
+
+See your system administrator for further information. 
+Copyright 1993-2013 McAfee, Inc.
+All Rights Reserved.
+http://www.mcafee.com

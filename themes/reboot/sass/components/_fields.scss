@@ -1,0 +1,101 @@
+.field--name-user-picture {
+  display:inline-block;
+  float:left;
+  margin-right:10px;
+  img {
+    width:28px;
+    display:inline-block;
+    border-radius:50%;
+    overflow:hidden;
+  }
+}
+
+.field--label-above {
+  .field__label {
+    margin:1em 0;
+  }
+}
+.field--name-field-gallery {
+  .field__items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); 
+    grid-gap: 20px;
+
+  }
+}
+
+.field--label-inline:not(.field--type-boolean)   {
+  $size:12em;
+  
+
+  padding:1.5em 20px;
+  padding:5px 10px;
+  margin:1.5em 0;
+
+  // overflow:hidden;
+  display: grid;
+    grid-template-columns: $size 1fr; 
+    grid-gap: 0 20px;
+    
+    @include white-box();
+    // background:linear-gradient(to top, $gris_95, white);
+
+    // border-bottom:1px solid $gris_80;
+  .field__label {
+    text-align:right;
+    font-weight:600;
+    color:$bk;
+    // border-bottom:1px solid $gris_90;
+  }
+  .field__label,
+  .field__items {
+    float:none;
+    // color:$claro;
+  }
+  .field__item {
+    // color:$claro;
+  }
+  p + p {
+    // margin-bottom:.5em;
+  }
+}
+
+.field--type-boolean {
+  display:flex;
+  margin-bottom:.5rem;
+  .field__label {
+    font-weight:600;
+  }
+  .field__item {
+    order:-1;
+    background-color:$bk_1;
+    border-radius:6px;
+    // background:url(../images/icons/plus.svg);
+    // background-repeat:no-repeat;
+    // background-size:contain;
+    color:white;
+    margin-right:.5rem;
+    padding:0 5px;
+
+
+  }
+}
+
+.field--name-body {
+  table {
+    font-size:.875em;
+    th,
+    td {
+        padding:5px;
+
+    }
+    th {
+      background:$bk;
+      color:white;
+    }
+    td {
+      vertical-align: top;
+    }
+  }
+  
+}

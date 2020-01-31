@@ -1,0 +1,324 @@
+
+
+
+
+.region-highlighted {
+
+  // padding-bottom:1.5em;
+  & > * {
+    // padding:1.5em 1.5em 1.5em 0;
+  }
+  
+  // background:$bk_3;
+  
+  
+  & > * {
+    // padding-right:1.5em;  
+  }
+}
+
+#block-exposedformsolution-search-pagesolution-search-page {
+  // font-size:.875em;
+  .form-item-search-api-fulltext,
+  .edit-actions {
+    float:left;
+    
+  }
+  #edit-actions {
+    margin-left:1em;
+  }
+  .form--inline {
+    display:flex;
+    flex-wrap: wrap;
+  }
+  
+  .form-item-search-api-fulltext {
+    // margin-right:1em;
+  }
+}
+
+
+
+#edit-search-api-fulltext {
+    max-width:100%;
+    // background:red;
+    width:12em;
+}
+#block-exposedformsolution-search-pagesolutions,
+#block-exposedformsolution-search-pagesolution-search-page,
+#block-cmfunctiontaxonomytermname {
+  font-size:14px;
+color:$claro;
+  .form-item,
+  .form-actions {
+    margin:0;
+  }
+  input, select {
+    border:1px solid $gris_70;
+    border-radius:6px;
+    padding:3px 8px;
+  }
+  #edit-submit-solution-search-page {
+  background:$bk_1;
+  border-color:$bk_1;
+  // border:1px solid $gris_80;
+  // border-radius:6px;
+  // padding:3px 6px;
+  color:white;
+}
+}
+#edit-search-api-fulltext {
+  float:left;
+}
+
+#block-exposedformsolution-search-pagesolution-search-page {
+  .form--inline .form-actions {
+    // clear:none;
+  }
+  .block-header {
+    display:none;
+  }
+}
+
+#block-cmfunctiontaxonomytermname {
+  
+  // padding-top:1.5em;
+  select {
+    // background:red;
+    max-width:100%;
+  }
+}
+#edit-search-api-fulltext {
+  
+}
+#region-help {
+  background:$bk_2;
+  background:#bbe6e8;
+    
+  padding:1.5em 0;
+  // display:none;
+}
+
+#region-help {
+  .block {
+    background:lighten(#bbe6e8,10);
+  }
+  #block-helpdesk,
+  #block-views-block-help-button-block-1,
+  #block-testhelp,
+  #block-helpsample {
+      background:transparent;
+      
+  }
+  
+    .btn-helpdesk {
+    // @include menu-icon();
+    position:relative;
+    
+    @include menu-icon();
+    padding-left:2.5em;
+    &:before {
+      background-image:url(../images/icons/conversation.svg);
+      width:1.5em;
+      height:1.5em;
+      top:2px;
+      left:10px;
+    }
+    
+  }
+}
+#block-helpdesk,
+#block-views-block-help-button-block-1,
+#block-testhelp,
+#block-helpsample {
+  
+  text-align:center;
+  border:none;
+  padding:0;
+
+}
+#block-reboot-account-menu,
+#user-menu {
+  .view-user-info a,
+  .item-list,
+  .menu a {
+    // background:$bk;
+    color:$claro;
+    display:block;
+    padding:7px 8px;
+  }
+}
+#user-menu {
+  // background:$gris_90;
+  position:absolute;
+  top:0;
+  right:85px;
+  font-size:.8125em;
+  color:$bk_1;
+  @media(min-width:$device) {
+    right:65px;
+  }
+  a {
+  
+  }
+  h2 {
+    display:none;
+  }
+  .region {
+    display:flex;
+  }
+  .view-user-info {
+    
+    .user-name,
+    .item-list {
+      ul {
+        @include reset-list();
+        display:flex;
+        &:before {
+          content:"[";
+        }
+        &:after {
+          content:"]";
+        }
+        li {
+          
+          &:not(:last-of-type) {
+            padding-right:5px;
+          }
+        }
+        
+      }
+      
+    }
+    .user-name a {
+      text-decoration:none;
+      &:before {
+        content:"\e971";
+      }
+      
+    }
+    .views-row {
+      display:flex;
+      & > * {
+        // margin-right:1em;
+        // background:$grqis_95;
+     
+        // color:$bk_1;
+
+  
+      }
+    }
+  }
+  .menu {
+    @include reset-list();
+    display:flex;
+    li a {
+      
+      // color:$general;
+      // background:$gris_95;
+    }
+  }
+  .contextual {
+    right:-30px;
+  }
+  
+  .help {
+    @include replace-text-image();
+    margin-left:.5em;
+    width:34px;
+    height:34px;
+    // background:$bk;
+    // border-radius:50%;
+    // overflow:visible;
+    &::before {
+      background-image:url(../images/icons/help2.svg);
+      width:34px;
+      height:34px;
+      top:-3px;
+      left:0px;
+      
+      // transition: all 2s;
+
+    }
+    
+    &:hover{
+       
+      &::before {
+          background-image:url(../images/icons/help3.svg);
+          
+      }
+      
+        
+        
+    }
+    &.active::before {
+      background-image:url(../images/icons/help4.svg);
+ 
+    }
+    
+    
+  }
+  
+}
+
+#block-reboot-account-menu {
+  // position:absolute;
+  // top:0;
+  // right:0;
+}
+/*
+#block-views-block-user-info-block-1 {
+  // background:red;
+  
+  // color:$claro;
+  a { color:$claro;text-decoration:none;}
+  h2 {
+    display:none;
+  }
+  // position:absolute;
+  // top:0;
+  // right:20px;
+  // display:none;
+  .views-row {
+    display:flex;
+    & > * {
+      padding:5px 10px;
+    }
+  }
+  .contextual {
+    right:-20px;
+  }
+}
+*/
+
+
+#btn-help-2 {
+  width:2em;
+  height:2em;
+  background:cyan;
+  display:block;
+  background-image:url(../images/icons/help2.svg);
+  background-size:cover;
+}
+
+#edit-userid {
+  width:9em;
+}
+
+
+.block-devel-switch-user{
+  .links {
+    @include reset-list();
+    a {
+      text-decoration:none;
+      display:block;
+      padding:2px 0;
+      
+    }
+    li:not(:last-of-type){
+      border-bottom:1px solid $gris_80;
+    
+    }
+    padding-bottom:2em;
+  }
+}

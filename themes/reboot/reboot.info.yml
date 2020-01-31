@@ -1,0 +1,34 @@
+name: "Reboot"
+description: "Reboot Desc"
+type: theme
+core: 8.x
+base theme: classy
+libraries:
+  - reboot/global-styling
+libraries-override:
+    classy/base:
+      css:
+        component:
+          css/components/menu.css: false 
+regions:
+  user_menu: 'User menu'
+  sidebar_top: 'Top sidebar'
+  sidebar_first: 'Left sidebar'
+  sidebar_second: 'Right sidebar'
+  front_slide: 'Front SlideShow'
+  front_content: 'Front Content'
+  menu_second: 'Main Menu Second level'
+  title_heading: 'Title Heading'
+  content: Content
+  header: Header
+  primary_menu: 'Primary menu'
+  secondary_menu: 'Secondary menu'
+  
+  footer: Footer
+  notification: Notification
+  highlighted: Highlighted
+  help: Help
+  breadcrumb: Breadcrumb
+  
+entity_print:
+  all: 'reboot/print-styling'

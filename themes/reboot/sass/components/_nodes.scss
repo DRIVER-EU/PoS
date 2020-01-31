@@ -1,0 +1,328 @@
+
+.node__content {
+  // overflow:hidden;
+}
+
+.graphic-trial {
+  // background:$gris_80;
+  // border:2px solid black;
+  // width:600px;
+  // height:680px;
+  // background:white;
+  // flex-basis:680px;
+  height:480px;
+  /* main layout */
+  display:flex;
+   flex-flow: row wrap;
+   justify-content:baseline;
+   // justify-content:flex-start | flex-end | center | baseline | stretch
+
+
+  .col {
+    // background:$gris_90;
+  }
+ .col-3, 
+ .col-1 {
+    // background:$gris_95;
+    // flex-basis:2em;
+    width:2.5em;
+    position:relative;
+  }
+  .col-2 {
+    // background:$gris_95;
+    // flex-basis:480px;
+    width:480px;
+    
+    // flex-basis:680px;
+    position:relative;
+  }
+  .col-3 {
+    // align-self: flex-end;
+    width:4em;
+  }
+  
+  /* encabezados */
+  
+  .list-1 {
+    padding-left:1em;
+  }
+  
+  a {
+    text-decoration:none;
+  }
+  
+  .col-3 {
+      text-align:center;
+      color:white;
+      a {
+        color:white;
+        // background:green;
+        display:block;
+         // height:50%;
+         width:100%;
+         display:flex;
+         align-items: center;
+         justify-content:center ;
+         &:hover {
+          background:$bk;
+         }
+         
+         
+      }
+      background:$gris_70;
+      h3 {
+        margin:0;
+        padding:0;
+        
+      }
+      .list-3 {
+        height:20%;
+        
+        a {
+          height:100%;
+          background:$gris_60;
+           &:hover {
+          background:$bk;
+         }
+        }
+      }
+      .list-4 {
+        height:80%;
+        
+        a {
+          height:100%;
+          background:$gris_80;
+           &:hover {
+          background:$bk;
+         }
+        }
+      }
+    }
+  
+  
+  
+  h2 {
+    color:white;
+    background:$bk;
+    text-align:center;
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    position:absolute;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    text-transform:uppercase;
+    line-height:1.8em;
+    
+    // transform: rotate(-90deg);
+  }
+  .graphic-circle-wrap {
+    position:relative;
+    // border:1px solid black;
+    // background:$gris_95;
+    height:340px;
+    h3 {
+      position:absolute;
+      margin:0;
+      top:50%;
+      left: 50%;
+      display:flex;
+      align-items: center;
+
+    transform: translate(-50%, -50%);
+      // right:0;
+      // bottom:0;
+      width:212px;
+      height:212px;
+      background:$bk_2;
+        // shape-outside: circle(50%);
+
+      color:white;
+      border-radius:50%;
+      padding:2em;
+      text-align:center;
+      
+    }
+    
+    ul {
+      @include reset-list();
+      li a {
+        display:block;
+        width:112px;
+        height:112px;
+        font-size:.8125em;
+        border-radius:50%;
+        text-align:center;
+        padding:1em;
+        color:white;
+        // background:transparentize($bk,.2);
+        background:linear-gradient(to top,$bk, transparentize($bk_1,.2));
+        position:absolute;
+       
+          // display:flex;
+       // align-items: center;
+         border:1px solid $bk;
+         box-shadow:4px 4px 6px transparentize($gris_10,.8);
+      
+        transform: translate(-56px, -56px);
+        // transition: background 350ms ease;
+         // transition: transform .2s;
+        
+        &:hover {
+          background:linear-gradient(to top,$bk_1,$bk);
+          // transform: scale(1.2);
+          // transform: translate(-156px, -156px);
+          
+          // transform: translate(-50%, -50%);
+        }
+      }
+      li:nth-child(1) a {
+        top:62px;
+        left:175px;
+         
+        // background:red;
+      }
+      li:nth-child(2) a {
+        top:62px;
+        left:307px;
+         
+        // background:red;
+      }
+      li:nth-child(3) a {
+        top:176px;
+        left:373px;
+         
+        // background:red;
+      }
+      li:nth-child(4) a {
+        top:290px;
+        left:307px;
+         
+        // background:red;
+      }
+      li:nth-child(5) a {
+        top:290px;
+        left:175px;
+         
+        // background:red;
+      }
+      li:nth-child(6) a {
+        top:176px;
+        left:109px;
+         
+        // background:red;
+      }
+    }
+    
+    a {
+    }
+  }
+  
+    .graphic-circle-wrap ul li a,
+   .list-3,
+   .list-4 {
+      display:flex;
+       align-items: center;
+       text-align:center;
+       // background:red;
+   }
+  
+}
+
+
+
+
+.graphic-trial-evaluation,
+.graphic-trial-execution {
+  height:320px;
+  h2 {
+    background:$bk_3;
+
+  }
+  .col-2 {
+    ul {
+      @include reset-list();
+      display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			grid-gap: 0 0px;
+      li a {
+        display:block;
+        background:$bk;
+        color:white;
+        height:80px;
+          display:flex;
+       align-items: center;
+       justify-content:center;
+       text-align:center;
+       // font-size:.8125em;
+       background:$bk_3;
+       &:nth-child(n):hover {
+        background:$bk_3;
+       }
+        
+      }
+      li:nth-child(1)  a {
+        background: adjust-color($bk_3, $hue: 15deg, $saturation: 0, $lightness: 10);
+      }
+      li:nth-child(2) {
+        grid-column:2;
+        grid-row:2;
+        a {
+          background: adjust-color($bk_3, $hue: 10deg, $saturation: 0, $lightness: 5);
+        }
+        
+        
+        
+
+
+      }
+      li:nth-child(3) {
+        grid-column:3;
+        grid-row:3;
+         a {
+          background: adjust-color($bk_3, $hue: 5deg, $saturation: 0, $lightness: 5);
+        }
+
+      }
+      li:nth-child(4) {
+        grid-column:4;
+        grid-row:4;
+
+      }
+
+    }
+  }
+}
+
+
+
+
+.graphic-trial-evaluation {
+  h2 {
+    background:$bk_1;
+  }
+  .col-2 ul li {
+    a {
+      background:$bk_1;
+      &:nth-child(n):hover {
+        background:$bk_1;
+     }
+    }
+     
+    &:nth-child(1)  a {
+      background: adjust-color($bk_1, $hue: 15deg, $saturation: 0, $lightness: 35);
+    }
+    &:nth-child(2)  a {
+      background: adjust-color($bk_1, $hue: 10deg, $saturation: 0, $lightness: 15);
+    }
+    &:nth-child(3)  a {
+      background: adjust-color($bk_1, $hue: 5deg, $saturation: 0, $lightness: 10);
+    }
+    &:nth-child(4)  a {
+      // background: adjust-color($bk_1, $hue: 0deg, $saturation: 0, $lightness: 0);
+    }
+    
+  }
+
+}

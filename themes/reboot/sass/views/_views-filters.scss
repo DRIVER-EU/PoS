@@ -1,0 +1,47 @@
+.block-facets,
+.views-exposed-form {
+  // padding:4rem 0;
+  
+  // background:silver;
+  button,
+  input,
+  optgroup,
+  select,
+  textarea  {
+    // width:4rem;
+    // font-size:.8125em;
+  }
+}
+
+
+.region-highlighted {
+  display:flex;
+  flex-wrap: wrap;
+  .block {
+    // background:$gris_80;
+    padding:1rem;
+  }
+  .form-item-query {
+    float:none;
+    margin:0;
+  }
+}
+
+#views-exposed-form-solutions-explorer-solutions > div {
+  display:flex;
+  .form-type-select {
+    margin:0 1.5rem;
+  }
+  .form-item, .form-actions {
+    margin:0 .5rem;
+  }
+  .js-form-type-textfiel {
+    margin-left:0;
+  }
+}
+
+
+.region-highlighted {
+  background:$gris_95;
+}
+

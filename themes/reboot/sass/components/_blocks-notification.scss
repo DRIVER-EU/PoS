@@ -1,0 +1,63 @@
+#block-views-block-user-company-notification-block-1 {
+  .view-header {
+    // background:$gris_90;
+    // padding:1.5em;
+  }
+
+}
+
+
+
+#block-views-block-notification-company-not-published-block-1 {
+  .view-content {
+    display:none;
+  }
+}
+
+.region-notification {
+  font-size:.875em;
+  // padding:1.5em;
+  color:$claro;
+  // overflow:hidden;
+  @include clear();
+  .block {
+    float:left;
+    margin-right:30px;
+    border:1px solid $gris_70;
+    background:$gris_94;
+    padding:5px 20px 5px 0;
+    margin:15px;
+    border-radius:6px;
+    
+   
+  }
+  a {
+    color:$claro;
+  }
+  background:$gris_90;
+  .view-header,
+  .views-field-nothing {
+    
+    // padding: 0;
+    
+    .notification {
+     
+      // padding-left:15px;
+    }
+    
+    // display:block;
+  }
+  
+  
+  
+  .notification {
+    // border-left:2px solid $bk;
+    padding-left:40px;
+    margin:5px 0;
+    padding:0 0 0px 40px;
+    background:url(../images/icons/bell.svg) no-repeat;
+    background-size:18px;
+    background-position:10px 0px;
+    min-height:30px;
+  }
+}

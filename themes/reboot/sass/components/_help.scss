@@ -1,0 +1,102 @@
+.region-help {
+  .block-header h2 {
+    // display:none;
+  }
+
+  
+}
+#block-helpbutton {
+  .field--name-body {
+  max-width:100%;
+    width:100%;
+  }
+  padding-top:0;
+  padding-bottom:0;
+}
+
+#region-button-help {
+  width:100%;
+  background:red;
+  position:relative;
+  background:black;
+}
+
+#btn-help {
+  $helpsize:50px;
+  @include menu-icon();
+  width:$helpsize;
+  height:40px;
+  overflow:hidden;
+  // background:red;
+  display:block;
+  position:absolute;
+  top:-40px;
+  right:20px;
+  
+  
+  &:before {
+    // content:"\ea09";
+    // opacity:.5;
+    // background-color:black;
+   background-image: url(../images/icons/help4.svg);
+   width:$helpsize;
+  height:$helpsize;
+  top:0;
+  left:0;
+  }
+  &:hover,
+  &.active {
+    // padding-bottom:1.5em;
+     // top:-80px;
+      &:before {
+        // opacity:1;
+      }
+  }
+  &.active:before {
+    background-image: url(../images/icons/help5.svg);
+  }
+  
+}
+#help-text {
+  max-width:$device_max;
+  // opacity:0;
+  // height:1px;
+  // display:none;
+  // overflow:hidden;
+  
+  background:$gris_95;background:white;
+  border:1px solid black;
+  padding:2em;
+  margin:0 auto 30px ;
+  border-radius: 6px;
+  // margin-top:1.5em;
+  &.active {
+    // margin-top:3em;
+    // display:block;
+    // height:auto;
+  }
+  &:before {
+    
+    
+  }
+
+}
+
+
+.region-help {
+   max-width:$device_max;
+  // opacity:0;
+  // height:1px;
+  // display:none;
+  // overflow:hidden;
+  margin:0 auto;
+  .block {
+    background:$gris_95;background:white;
+  border:1px solid $gris_80;
+  padding:2em;
+  margin:1.5em 0;
+  border-radius: 6px;
+  }
+  
+  
+}

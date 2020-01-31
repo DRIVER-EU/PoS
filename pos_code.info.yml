@@ -1,5 +1,0 @@
-name: 'Code for Portfolio of Solutions'
-type: module
-description: 'Code related to Portfolio of Solutions of the Driver EU project'
-core: 8.x
-package: 'Custom'

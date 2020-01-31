@@ -1,0 +1,264 @@
+
+
+
+.view.view-flip-card {
+  .svg-icon {
+    max-width:100%;
+    height:auto;
+    
+  }
+   h4 {
+    // background:transparentize($bk_1,.2);
+    // background:$bk_1;
+    // color:white;
+    border:1px solid $bk;
+    background:white;
+    color:$bk_1;
+    margin:0;
+    padding:7px 10px 12px;
+    position:absolute;
+    bottom:0px;
+    left:0;
+    width:100%;
+    // color:white;
+    font-weight:normal;
+    text-transform:uppercase;
+    // font-size:.875em;
+    font-size:0.9375em;
+    
+    font-weight:600;
+    // letter-spacing:1px;
+   } 
+  .flip-card {
+    background-color: transparent;
+    // width: 300px;
+    // border:4px solid $bk_1;
+    height: 230px;
+   
+    color:white;
+    // overflow:hidden;
+    // border: 1px solid #f1f1f1;
+    // perspective: 1000px; /* Remove this if you don't want the 3D effect */
+  }
+
+  /* This container is needed to position the front and back side */
+  .flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+  }
+
+  /* Do an horizontal flip when you move the mouse over the flip box container */
+  .flip-card:hover .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+
+  /* Position the front and back side */
+  .flip-card-front, .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+  }
+  // $color:$bk;
+  // $color:$bk_1;
+  // $color:black;
+  // $color:$bk_3;
+  
+  /* Style the front side (fallback if image is missing) */
+  .flip-card-front {
+    // background-color: #bbb;
+    // background-color:$gris_98;
+    // border:2px solid $bk_1;
+    // border-radius:20px 20px 0 0;
+    color: black;
+    &:before {
+      // content:"";
+      // @include absolute();
+      // background:linear-gradient(to bottom,transparentize($color,.6),transparentize($color,.4));
+    }
+  }
+
+  /* Style the back side */
+  .flip-card-back {
+    background-color:$bk_1;
+    color: white;
+    padding:0 1em;
+    transform: rotateY(180deg);
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    font-size:.8125em;
+    overflow:hidden;
+    p {
+      position:absolute;
+      top:1.5em;
+      left:0;
+      padding:1em;
+    }
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+   
+  }
+  .view-content > div {
+    // background:red;
+  }
+
+  /* COLORS */ 
+  $color:$bk_1;
+  &.view-flip-card-black,
+  &.view-flip-card-blue,
+  &.view-flip-card-orange,
+  &.view-flip-card-color {
+    .flip-card-front {
+      // background-color: #bbb;
+      // background-color:$gris_98;
+      // border:2px solid $bk_1;
+      // border-radius:20px 20px 0 0;
+      color: black;
+      &:before {
+        content:"";
+        @include absolute();
+        background:linear-gradient(to bottom,transparentize($color,.6),transparentize($color,.3));
+      }
+    }
+    h4 {
+      color:white;
+      
+      border:none;
+      background:transparentize($color,.7);
+      font-size:.8125em;
+      text-shadow:2px 2px 4px $bk;
+
+    }
+
+  }
+  &.view-flip-card-blue {
+    $color:$bk;
+    .flip-card-front {
+    &:before {
+      
+      background:linear-gradient(to bottom,transparentize($color,.5),transparentize($color,.3));
+    }
+  }
+  .flip-card-back {
+    background-color:$bk;
+  }
+  h4 {     background:transparentize($color,.7); }
+
+  }
+  &.view-flip-card-orange  {
+    $color:#b88654;
+    $color:#a46f3a;
+    
+    .flip-card-front {
+    &:before {
+      
+      background:linear-gradient(to bottom,transparentize($color,.6),transparentize($color,.2));
+    }
+  }
+  .flip-card-back {
+    background-color:$color;
+  }
+  h4 {     background:transparentize($color,.7); }
+  }
+
+  &.view-flip-card-black  {
+    
+    $color:$gris_20;
+    
+    .flip-card-front {
+    &:before {
+      
+      background:linear-gradient(to bottom,transparentize($color,.5),transparentize($color,.3));
+    }
+  }
+  .flip-card-back {
+    background-color:$color;
+  }
+  h4 {     background:transparentize($color,.7); }
+  }
+  &.view-flip-card-border  {
+    & >  .view-content{
+      
+      // grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
+      // grid-gap: 30px;
+    }
+
+
+    .flip-card {
+      border:2px solid $bk_1;
+      // border-radius:12px;
+      // height:150px;
+    }
+    img,
+    .flip-card-front,
+    .flip-card-back,
+    .flip-card-inner {
+      // border-radius:12px;
+    }
+    h4 {
+      // border-radius:0 0 10px 10px;
+      border:none;
+      // bottom:1px;
+      // left:1px;
+      // right:1px;
+      // width:auto;
+      background:$bk_1;
+      color:white;
+     
+        
+     
+        font-size:.8125em;
+        text-shadow:2px 2px 4px $bk;
+  
+     
+
+
+    }
+    $color:$gris_20;
+     // border:4px solid $bk_1;
+     .flip-card-front {
+      // background-color: #bbb;
+      // background-color:$gris_98;
+      // 
+      // 
+    .flip-card-front {
+    
+      border:2px solid red;
+    
+  }
+}}
+  
+  
+&.view-grid-small  {
+  h4 {
+    // font-size:.8125em;
+  }
+  .flip-card {
+   
+    // border-radius:12px;
+    height:150px;
+  }
+}
+
+}
+
+
+
+
+.view.view-flip-card-perspective {
+  .flip-card {
+    perspective: 1000px; /* Remove this if you don't want the 3D effect */
+  }
+
+}
+

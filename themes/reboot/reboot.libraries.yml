@@ -1,0 +1,16 @@
+global-styling:
+  css:
+    theme:
+      css/style.css: {}
+  js:
+    js/main.js: {}
+    js/reload_h5p.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal
+    - core/drupal.dialog.ajax
+    
+print-styling:
+  css:
+    theme:
+      css/print-style.css: {}

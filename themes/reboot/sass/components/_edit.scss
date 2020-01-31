@@ -1,0 +1,91 @@
+.js .field--widget-entity-reference-paragraphs .tabledrag-handle .handle {
+  margin-left: 0;
+  margin-right: 0;
+  padding-right: 0em;
+}
+
+$cursor-size:1.5em;
+a.tabledrag-handle .handle {
+    background: url(../images/icons/move.svg) no-repeat 0 0;
+    background-size:contain;
+    // background-color:red;
+    width:$cursor-size;
+    margin:0;
+    padding:0;
+    height:$cursor-size;
+}
+
+
+.js .field--widget-entity-reference-paragraphs .draggable .tabledrag-handle {
+    padding-right: 0;
+    margin-left: 0;
+}
+form .field-multiple-table .field-multiple-drag .tabledrag-handle {
+    padding-right: 0em;
+}
+.draggable a.tabledrag-handle {
+    cursor: move;
+    float: left;
+    height: $cursor-size;
+    margin-left: 0em;
+    overflow: hidden;
+    text-decoration: none;
+}
+
+
+
+.field-multiple-drag {
+  // .handle,
+  a {
+    width:$cursor-size;
+    height:$cursor-size;
+    display:block;
+  }
+  // .handle {
+    // display:block;
+    // background:red;
+    // width:3em;
+    // height:3em;
+    // border-radius:50%;
+    // overflow:hidden;
+    // padding:0;
+    
+    
+  // }
+}
+
+#edit-field-table-of-paragraphs-wrapper {
+  // background:red;
+  font-size:.875em;
+  .filter-wrapper {
+    display:none;
+  }
+  .paragraphs-subform {
+  display:flex;
+  
+  background:linear-gradient(to top, $gris_90, white);
+    & > * {
+      // background:white;
+      padding:0 10px;
+    }
+    border-bottom:2px solid $gris_80;
+    // border-top:1px solid $gris_80;
+    padding:1em 0;
+    
+    // width:100%;
+
+  }
+  .field-multiple-table {
+    width:100%;
+  }
+  
+  .text-full {
+    max-width:100%;
+  }
+  .form-date {
+      // width:7em;
+  }
+  .form-number {
+    width:3em;
+  }
+}

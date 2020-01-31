@@ -1,0 +1,40 @@
+.view-guidance-tool-views.view-display-id-page_4  {
+  .views-row {
+    background:white;
+    border:1px solid $gris_80;
+    border-radius:6px;
+    padding:1em;
+    box-shadow:2px 2px 6px transparentize($gris_20,.9);
+  }
+  .view-content {
+  display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+
+			grid-gap: 30px;
+
+  }
+  .views-field {
+    
+    font-size:.875em;
+  }
+  h3 {
+    margin:0;
+  }
+  .views-field-field-area,
+  .views-field-field-acronym {
+    display:inline-block;
+    padding-right:5px;
+    font-style:italic;
+    color:$claro;
+    & > * {
+      display:inline-block;
+    }
+    &:not(:last-of-type) {
+      // background:red;
+    }
+  }
+  .views-field-view-group-1 a {
+    @include overlay-link();
+    
+  }
+}

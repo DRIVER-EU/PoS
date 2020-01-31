@@ -1,0 +1,47 @@
+#block-reboot-breadcrumbs{
+    background:$bk_2;
+    background:$gris_95;
+    background:transparentize($bk_1,.5);
+    // background:$bk_1;
+    color:$general;
+    margin-top:-29px;
+    color:white;
+    // opacity:.72;
+
+    
+    a {
+        text-decoration:none;
+        display:inline-block;
+        
+        color:$general;
+        padding:5px;
+        font-size:.875em;
+        text-transform:uppercase;
+        color:white;
+        color:$bk_2_2;
+        color:white;
+        // font-style:italic;
+    }
+    ol {
+        display:flex;
+        max-width:$device_max;
+        margin:0 auto;
+    }
+}
+
+.breadcrumb {
+    padding:0;
+}
+body.body-header-orange  {
+    #block-reboot-breadcrumbs{
+        
+        background:transparentize(#c17528,.5);
+        
+        color:#f0d6a6;
+        a {
+            color:#f0d6a6;
+        }
+    }
+    
+
+}

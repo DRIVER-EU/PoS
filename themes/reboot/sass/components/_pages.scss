@@ -1,0 +1,261 @@
+
+.overlay-link {
+  @include overlay-link();
+}
+.block-system-branding-block  {
+  .site-logo {
+    max-width:100%;
+    min-width:200px;
+    img {
+    // display:block;
+    // max-width:100%;
+    }
+    
+    // background:white;
+  }
+}
+
+#toolbar-administration {
+  // display:none;
+}
+@media (min-width:$device) {
+  #header {
+    max-width:$device;
+    margin:0 auto;
+    padding:2em 0 1em;
+    // background:red;
+    
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-gap: 30px;
+    .region-header {
+    
+    
+      grid-column:span 3 ;
+      
+      
+    }
+    .region-primary-menu {
+      grid-column:span 9;
+      display:flex;
+       align-items: center;
+      justify-content:flex-end;
+      // justify-content: center;
+      .menu {
+        // background:$gris_70;
+      }
+      // background:$gris_95;
+    }
+    
+    nav {
+      display:flex;
+      justify-content:flex-end;
+    }
+  }
+
+}
+
+.layout-container {
+  position:relative;
+}
+.menu--account {
+  // position:absolute;
+  // top:0;
+  // right:30px;
+}
+.site-slogan,
+.site-name {
+
+  margin-left:10px;
+  // font-family:garamond;
+  position:relative;
+  top:1.3em;
+  a {
+    color:$claro;
+  }
+  font-style:italic;
+  font-size:1.2em;
+  font-weight:600;
+  color:$claro;
+  
+}
+.block-system-branding-block {
+  display:flex;
+ flex-flow: row wrap;
+
+}
+.view-group-content,
+.view-custom-group,
+.menu,
+.site-name  {
+  a {
+    text-decoration:none;
+  }
+}
+
+.region-sidebar-first {
+  
+  // background:$gris_80;
+  h2 {
+    
+  }
+}
+
+
+.tabs {
+  // background:$gris_90;
+  
+  // font-size:.875em;
+  font-size:14px;
+  display:flex;
+  flex-wrap:wrap;
+  li {
+    margin:0;
+    &:first-of-type {
+      a {
+        border-radius:6px 0 0 6px;
+        border-left:1px solid $gris_80;
+      }
+      
+      
+      
+    }
+     &:last-of-type a {
+      border-radius: 0 6px 6px 0;
+      border-right:1px solid $gris_70;
+      
+    }
+    &:not(:last-of-type) {
+      // border-right:1px solid $gris_80;
+    }
+    &.is-active a {
+      border-color:$gris_50;
+    }
+  }
+  a {
+    color:$claro;
+    float:left;
+    // background:$gris_95;
+    // border:1px solid red;
+    border-top:1px solid $gris_80;
+    border-bottom:1px solid $gris_70;
+    border-right:1px solid $gris_80;
+    
+  }
+  
+}
+
+
+footer {
+  
+}
+.region-sidebar-first,
+.region-footer {
+  font-size:.875em;
+  color:$general;
+}
+
+.region-footer {
+    padding-top:3em;
+    @media (min-width:$device_4) {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-gap: 30px;
+    }
+    @media (min-width:$device_7) {
+    grid-template-columns: repeat(3, 1fr);
+    }
+    @media (min-width:$device) {
+    grid-template-columns: repeat(6, 1fr);  
+      
+      
+    }
+    
+    
+    // opacity:.75;
+  a {
+    color:$general;
+  }
+  & > * {
+    // background:red;
+    // background:$gris_80;
+    // border:1px solid $gris_80;
+    // padding:0 10px;
+    // border-radius:$radius;
+    // grid-column: span 2;
+    // border:1px solid $;
+    &:not(:last-of-type) {
+      // border-right:1px solid $gris_80;
+    }
+  }
+}
+
+.btn,
+a.btn {
+  text-decoration:none;
+  border:1px solid $gris_20;
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:$radius;
+  
+  
+}
+
+#block-aboutus a.btn {
+  border-color:white;
+
+}
+
+
+h1.page-title {
+  color:white;
+  background:$bk_1;
+  background:url(../images/header.jpg);
+  background-size:cover;
+  background-position:center;
+  text-align:center;
+  padding:2.8em 0;
+  margin:0;
+  a {
+    color:white;
+    border-bottom:1px solid transparentize(white,.7);
+    text-decoration:none;
+    &:hover {
+      border-bottom:2px solid white;
+    }
+  }
+  
+}
+// body.path-group,
+// body.path-gt,
+body.body-header-orange
+ {
+  h1.page-title {
+    background-image:url(../images/header-trials.jpg);
+  }
+}
+
+
+
+#toolbar-administration {
+  display:none;
+  @media (min-width:$device) {
+    display:block;
+  }
+}
+
+
+body.toolbar-tray-open.toolbar-vertical.toolbar-fixed {
+    margin-left: 0px;
+    margin-left: 0;
+}
+
+
+
+
+body.user-logged-in {
+  .logged-in-hide {
+    display:none;
+    // border:5px solid black;
+  }
+}
