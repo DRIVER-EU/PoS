@@ -1592,6 +1592,10 @@ body.path-frontpage main .view {
 #block-languageswitcher .links .it a {
   background-image: url(../images/flags/it.png);
 }
+/* line 29, ../sass/navigation/_navigation-lang.scss */
+#block-languageswitcher .links .es a {
+  background-image: url(../images/flags/es.png);
+}
 @media (min-width: 992px) {
   /* line 1, ../sass/navigation/_navigation-lang.scss */
   #block-languageswitcher {
