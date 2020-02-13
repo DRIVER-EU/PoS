@@ -60,7 +60,7 @@
   }
 }
 
-.field--type-boolean {
+.field--type-boolean:not(.field--name-field-solution-trial-part ) {
   display:flex;
   margin-bottom:.5rem;
   .field__label {
@@ -80,6 +80,25 @@
 
   }
 }
+.field--name-field-solution-trial-part {
+  // background:Red;
+  font-weight:600;
+  padding:1.5rem 0;
+  position:relative;
+  padding-left:2.2em;
+  background-color:red;
+  background:url(../images/icons/ribbon.svg) no-repeat;
+  background-size:32px;
+  background-position:0;
+  display:none;
+  &.field--result-On {
+    display:block;
+  }
+ 
+
+}
+
+
 
 .field--name-body {
   table {

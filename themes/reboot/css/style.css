@@ -3196,16 +3196,16 @@ aside.layout-sidebar-first input[type=checkbox] {
 }
 
 /* line 63, ../sass/components/_fields.scss */
-.field--type-boolean {
+.field--type-boolean:not(.field--name-field-solution-trial-part) {
   display: flex;
   margin-bottom: .5rem;
 }
 /* line 66, ../sass/components/_fields.scss */
-.field--type-boolean .field__label {
+.field--type-boolean:not(.field--name-field-solution-trial-part) .field__label {
   font-weight: 600;
 }
 /* line 69, ../sass/components/_fields.scss */
-.field--type-boolean .field__item {
+.field--type-boolean:not(.field--name-field-solution-trial-part) .field__item {
   order: -1;
   background-color: #0f7c8c;
   border-radius: 6px;
@@ -3214,21 +3214,38 @@ aside.layout-sidebar-first input[type=checkbox] {
   padding: 0 5px;
 }
 
-/* line 85, ../sass/components/_fields.scss */
+/* line 83, ../sass/components/_fields.scss */
+.field--name-field-solution-trial-part {
+  font-weight: 600;
+  padding: 1.5rem 0;
+  position: relative;
+  padding-left: 2.2em;
+  background-color: red;
+  background: url(../images/icons/ribbon.svg) no-repeat;
+  background-size: 32px;
+  background-position: 0;
+  display: none;
+}
+/* line 94, ../sass/components/_fields.scss */
+.field--name-field-solution-trial-part.field--result-On {
+  display: block;
+}
+
+/* line 104, ../sass/components/_fields.scss */
 .field--name-body table {
   font-size: .875em;
 }
-/* line 88, ../sass/components/_fields.scss */
+/* line 107, ../sass/components/_fields.scss */
 .field--name-body table th,
 .field--name-body table td {
   padding: 5px;
 }
-/* line 92, ../sass/components/_fields.scss */
+/* line 111, ../sass/components/_fields.scss */
 .field--name-body table th {
   background: #28497b;
   color: white;
 }
-/* line 96, ../sass/components/_fields.scss */
+/* line 115, ../sass/components/_fields.scss */
 .field--name-body table td {
   vertical-align: top;
 }

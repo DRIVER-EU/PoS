@@ -39,13 +39,18 @@
 #}
 
  
+ 
 
+
+ 
 {%
   set classes = [
     'field',
     'field--name-' ~ field_name|clean_class,
     'field--type-' ~ field_type|clean_class,
     'field--label-' ~ label_display,
+    'field--result-' ~ items[0].content|render|raw,
+
   ]
 %} {%
   set title_classes = [
@@ -59,7 +64,10 @@
     </div>
     {% else %}
     {% for item in items %}
-    <div{{ attributes.addClass(classes, 'field__item') }}>{{ item.content }}</div>
+    <div{{ attributes.addClass(classes, 'field__item') }}>
+    This solution participated in a Driver+ Trial
+         
+    </div>
       {% endfor %}
       {% endif %}
       {% else %}
@@ -71,7 +79,10 @@
             {% for item in items %}
             <div{{ item.attributes.addClass('field__item') }}>
           
-            {{ item.content }}</div>
+            {{ item.content }}
+            
+            
+            </div>
          
           {% endfor %}
           {% if multiple %}
