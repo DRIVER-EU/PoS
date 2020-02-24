@@ -1,7 +1,7 @@
 # pos_distribution
 PoS Drupal distribution
 
-## Warning: As this distribution is just a test it only installs the PoS site in English , Deutsch and French, this is to make the installation process a bit faster.
+## Warning: This distribution installs the PoS site in English , Deutsch and French, this is to make the installation process a bit faster. If you need any other language you can enable it after the installation ends.
 
 # How to install it
 
