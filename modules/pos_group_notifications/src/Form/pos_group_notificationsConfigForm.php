@@ -716,7 +716,7 @@ class pos_group_notificationsConfigForm extends ConfigFormBase {
 		$form['group8']['expiringnotificationintroduction'] = array(
 			'#type' => 'markup',
 			'#prefix' => '</br>',
-			'#markup' => t('Here you can configure which content types and which group types will be take into account to send expiration emails. When the system finds some content where their updated date was older than the expiration date configured (latests updated date + number of months configured into expiration time < today), it will send a notification to the author of the item. This process will be executed one time per month.'),
+			'#markup' => t('Here you can configure which content types and which group types will be take into account to send expiration e-mails. When the system finds some content where their updated date was older than the expiration time start period configured (latests updated date + number of months configured into expiration time start period < today ) and lower than the expiration time end period (latests updated date + number of months configured into expiration time end period > today), it will send a notification to the author of the item. This process will be executed one time per month.'),
 			'#suffix' => '</br>',
 			//'#tree' => true,
 		);
@@ -744,13 +744,35 @@ class pos_group_notificationsConfigForm extends ConfigFormBase {
 		
  		$form['group8']['pos_group_notifications_expiration_months'] = array(
 			'#type'          => 'select',
-			'#title'         => t('Expiration time'),
-			'#description' => t('Select the expiration time for the content. If you select never, items will never be processed as expired.'),
+			'#title'         => t('Expiration time start period'),
+			'#description' => t('Select the expiration start period time for the content. If you select never, items will never be processed as expired. This value can be used into the body as [period:start]'),
 			'#required'      => TRUE,	
 			'#options' => $optionsCT,
 			'#default_value' => $default_pos_group_notifications_expiration_months,	
 		);
+
+
 		
+		for ($i = 2; $i <= 49; $i++) {
+			$extraLabel = 'months';
+			if ($i==1) {
+				$extraLabel = 'month';	
+			}
+			
+			$optionsCT_end[$i] = $i." ".t($extraLabel);	
+    		
+		}
+		
+		$default_pos_group_notifications_expiration_end_months = $config->get('pos_group_notifications_expiration_end_months'); 
+		
+ 		$form['group8']['pos_group_notifications_expiration_end_months'] = array(
+			'#type'          => 'select',
+			'#title'         => t('Expiration time end period'),
+			'#description' => t('Select the expiration end period time for the content. This value can be used into the body as [period:end]'),
+			'#required'      => TRUE,	
+			'#options' => $optionsCT_end,
+			'#default_value' => $default_pos_group_notifications_expiration_end_months,	
+		);		
 				
 		$form['group8']['nodes']  = array(
 		  '#type' => 'details',
@@ -818,10 +840,19 @@ class pos_group_notificationsConfigForm extends ConfigFormBase {
 			'#type' => 'textarea',
 			'#rows'=> 7,
 			'#title' => t('Body e-mail'),
-			'#description' => t('[user:display-name], [item:url] (is the label + the url) and [site:name] will be replaced by the appropriate values.'),
+			'#description' => t('[user:display-name], [item:url] (is the label + the url), [site:name], [period:start] and [period:end] will be replaced by the appropriate values.'),
 			'#required'      => TRUE,
 			'#default_value' => $default_body_value,
 		); 
+		
+
+		$form['group8']['pos_group_notifications_expiration_run_now'] = array(
+			'#type'          => 'checkbox',
+			'#title'         => t('Check it to run it now (for testing purpose)'),
+			'#description' => t('This checkbox is just for testing purposes, if you check it and click over the button "Save configuration" the task that sends the expiring e-mails notifications will be executed in that moment. The e-mails will be sended, in case you have checked the "Testing mode" checkbox, all emails will be sended to the e-mail address configured there. If the "Testing mode" checkbox is unchecked the e-mails will be sended to the real addreces.'),
+			'#required'      => FALSE,
+			'#default_value' => '',
+		);		
 
 		/********************/
 							
@@ -892,6 +923,13 @@ class pos_group_notificationsConfigForm extends ConfigFormBase {
 				$form_state->setErrorByName('pos_group_notifications_group_validation_configgroups]['.$gK.'][sentence', $this->t('Add a sentece in '.$gK.'.'));
 			}			
 		
+			
+			$startDateMonths = $form_state->getValue('pos_group_notifications_expiration_months');
+			$endDateMonths= $form_state->getValue('pos_group_notifications_expiration_end_months');
+			
+			if ($startDateMonths>=$endDateMonths) {
+				$form_state->setErrorByName('pos_group_notifications_expiration_end_months', $this->t('End period value must be bigger than the start period value'));
+			}
 			
 			
 			//['group']
@@ -975,6 +1013,8 @@ class pos_group_notificationsConfigForm extends ConfigFormBase {
 		
 		//g8		
 		$config->set('pos_group_notifications_expiration_months', $form_state->getValue('pos_group_notifications_expiration_months'));
+		$config->set('pos_group_notifications_expiration_end_months', $form_state->getValue('pos_group_notifications_expiration_end_months'));
+		
 		$config->set('pos_group_notifications_expiration_node_types', $form_state->getValue('pos_group_notifications_expiration_node_types'));		
 		$config->set('pos_group_notifications_expiration_group_types', $form_state->getValue('pos_group_notifications_expiration_group_types'));
 		
@@ -983,6 +1023,11 @@ class pos_group_notificationsConfigForm extends ConfigFormBase {
 		
 		
 		$config->save(); // save data in pos_group_notifications.settings
+		
+		if ($form_state->getValue('pos_group_notifications_expiration_run_now')==1) {
+			pos_group_notifications_send_emails_expiring_items();	
+		}
+		
 		
 		//pos_group_notifications_send_emails();
 		

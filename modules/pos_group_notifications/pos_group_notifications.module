@@ -2322,7 +2322,14 @@ function pos_group_notifications_send_emails_expiring_items() {
 	
 	$config =  \Drupal::config('pos_group_notifications.settings');
 	$pos_group_notifications_expiration_months = $config->get('pos_group_notifications_expiration_months');
+	$pos_group_notifications_expiration_end_months = $config->get('pos_group_notifications_expiration_end_months');
 	
+	$extraPeriodStartLabel = 'months';
+	$extraPeriodEndLabel = 'months';
+	if ($pos_group_notifications_expiration_months==1) {
+		$extraPeriodStartLabel = 'month';
+	}
+					
 	//drupal_set_message("***----".rand(1, 150)."pos_group_notifications_expiration_months:".$pos_group_notifications_expiration_months, 'error');
 	
 	if ($pos_group_notifications_expiration_months>0) {
@@ -2343,9 +2350,24 @@ function pos_group_notifications_send_emails_expiring_items() {
 		$host = $base_url;	
 	
 		$now = new DrupalDateTime('now');
+		$nowEnd = new DrupalDateTime('now');
+		//drupal_set_message("now:".$now, 'error');
 		$now->setTimezone(new \DateTimeZone(DATETIME_STORAGE_TIMEZONE));
-		//drupal_set_message("now:".$now);		
-		$expirationDate = $now->modify('-'.$pos_group_notifications_expiration_months. 'month');		
+		//$nowEnd->setTimezone(new \DateTimeZone(DATETIME_STORAGE_TIMEZONE));
+		
+		$expirationDate = clone $now;
+		$expirationDateEnd = clone $now;
+		
+		$expirationDate = $expirationDate->modify('-'.$pos_group_notifications_expiration_months. 'month');	
+		
+		$monthToSubstract = $pos_group_notifications_expiration_months - ($pos_group_notifications_expiration_end_months - $pos_group_notifications_expiration_months);
+		
+		$expirationDateEnd = $expirationDateEnd->modify('-'.$monthToSubstract. 'month');
+		
+		//drupal_set_message("now:".$now, 'error');
+		//drupal_set_message("expirationDate:".$expirationDate, 'error');
+		//drupal_set_message("expirationDateEnd:".$expirationDateEnd, 'error');
+		
 		//drupal_set_message("now -".$pos_group_notifications_expiration_months." months:".$expirationDate);		
 		//drupal_set_message("DATETIME_DATETIME_STORAGE_FORMAT:".DATETIME_DATETIME_STORAGE_FORMAT);
 		//drupal_set_message("expirationDate in format:".$expirationDate->format(DATETIME_DATETIME_STORAGE_FORMAT));	
@@ -2355,21 +2377,32 @@ function pos_group_notifications_send_emails_expiring_items() {
 		//we need to recover all CT that belongds to the list of CT selected
 		$pos_group_notifications_expiration_node_types = $config->get('pos_group_notifications_expiration_node_types');
 		
-		foreach ($pos_group_notifications_expiration_node_types as $ct_k=>$ct_v) {			
-			if ($ct_k===$ct_v) {
+		$cntNodes = 0;
+		
+		foreach ($pos_group_notifications_expiration_node_types as $ct_k=>$ct_v) {
+						
+			if ($ct_k===$ct_v) {			
 				//this means that the CT is selected
 				//drupal_set_message("***----".rand(1, 150)."ct_k:".$ct_k."----value:".$ct_v, 'error');
-				
+					
 				$query = \Drupal::entityQuery('node');
 				$query->condition('status', 1);
 				$query->condition('type', $ct_k);
 				//$query->condition('changed', $expirationDate->format(DATETIME_DATETIME_STORAGE_FORMAT), '<=');
-				$query->condition('changed', $expirationDate->getTimestamp(), '<=');
+				//$query->condition('changed', $expirationDate->getTimestamp(), '<=');				
+				//$query->condition('changed', $expirationDateEnd->getTimestamp(), '>');
+				
+				$query->condition('changed', array($expirationDate->getTimestamp(),$expirationDateEnd->getTimestamp()), 'BETWEEN');
+				$query->sort('changed', 'ASC');				
+				
+				
 				$entity_ids = $query->execute();
 				$nodes = \Drupal::entityTypeManager()->getStorage('node')->loadMultiple($entity_ids);
 				
+				
 				foreach ($nodes as $n_k=>$n_v) {
-					//drupal_set_message("***----".rand(1, 150)."n_k:".$n_k."--title:".$n_v->get('title')->value."---last update date:".$n_v->getChangedTime()."---uid:".$n_v->get('uid')->target_id, 'error');
+					$cntNodes = $cntNodes +1;
+					//drupal_set_message($cntNodes."-***ct----".rand(1, 150)."n_k:".$n_k."--title:".$n_v->get('title')->value."---last update date:".$n_v->getChangedTime()."---uid:".$n_v->get('uid')->target_id, 'error');
 					
 					$account = \Drupal\user\Entity\User::load($n_v->get('uid')->target_id); // pass your uid
      				$userName = $account->getUsername();
@@ -2387,6 +2420,9 @@ function pos_group_notifications_send_emails_expiring_items() {
 					
 					$body_email = str_replace("[item:url]", $url_item, $body_email);
 					
+					$body_email = str_replace("[period:start]", $pos_group_notifications_expiration_months." ".$extraPeriodStartLabel, $body_email);
+					$body_email = str_replace("[period:end]", $pos_group_notifications_expiration_end_months." ".$extraPeriodEndLabel, $body_email);
+
 					
 					$body_email  = html_entity_decode( $body_email);
 					$body_email = render($body_email);			
@@ -2402,7 +2438,7 @@ function pos_group_notifications_send_emails_expiring_items() {
 		
 		//we need to recover all groups that belongds to the list of groups selected
 		$pos_group_notifications_expiration_group_types = $config->get('pos_group_notifications_expiration_group_types');
-
+		$cntGroups = 0;
 		foreach ($pos_group_notifications_expiration_group_types as $g_k=>$g_v) {
 			if ($g_k===$g_v) {
 				//this means that the group is selected
@@ -2411,11 +2447,17 @@ function pos_group_notifications_send_emails_expiring_items() {
 				$queryG = \Drupal::entityQuery('group');
 				//$queryG->condition('status', 1);
 				$queryG->condition('type', $g_k);
-				$queryG->condition('changed', $expirationDate->getTimestamp(), '<=');
+				//$queryG->condition('changed', $expirationDate->getTimestamp(), '<=');
+				//$queryG->condition('changed', $expirationDateEnd->getTimestamp(), '>');
+				$queryG->condition('changed', array($expirationDate->getTimestamp(),$expirationDateEnd->getTimestamp()), 'BETWEEN');
+				$queryG->sort('changed', 'ASC');	
+				
 				$entity_ids = $queryG->execute();
 				
 				foreach ($entity_ids as $entity_k=>$entity_v) {
-
+					
+					$cntGroups = $cntGroups + 1;
+					
 					$group = Drupal\group\Entity\Group::load($entity_k);				
 					$gid = $group->id[0]->value;
 					$glabel = $group->label[0]->value;
@@ -2426,7 +2468,7 @@ function pos_group_notifications_send_emails_expiring_items() {
 					$realname = $account->get('field_real_name')->value;
 					$userMail = $account->get('mail')->value; 
 					
-					//drupal_set_message("***----".rand(1, 150)."gid:".$gid."--title:".$glabel."------uid:".$gauthor."--userName:".$userName."---userMail:".$userMail."---realname:".$realname, 'error');
+					//drupal_set_message($cntGroups."-***----".rand(1, 150)."gid:".$gid."--title:".$glabel."------uid:".$gauthor."--userName:".$userName."---userMail:".$userMail."---realname:".$realname, 'error');
 					
 					$url_item = '<a href="'.$host.'/group/'.$gid.'">'.$glabel.'</a>';
 					
@@ -2436,6 +2478,9 @@ function pos_group_notifications_send_emails_expiring_items() {
 					$body_email = str_replace("[site:name]", $site_name, $body_email);
 					
 					$body_email = str_replace("[item:url]", $url_item, $body_email);
+
+					$body_email = str_replace("[period:start]", $pos_group_notifications_expiration_months." ".$extraPeriodStartLabel, $body_email);
+					$body_email = str_replace("[period:end]", $pos_group_notifications_expiration_end_months." ".$extraPeriodEndLabel, $body_email);
 					
 					
 					$body_email  = html_entity_decode( $body_email);
