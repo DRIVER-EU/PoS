@@ -14,6 +14,7 @@
       background:url(../images/flags/en.png);
       background-repeat:no-repeat;
       background-position:left center;
+      background-size:24px;
       color:$general;
       font-size:.8125em;
       text-transform: uppercase;
@@ -27,6 +28,8 @@
     .pl a {background-image:url(../images/flags/pl.png);}
     .it a {background-image:url(../images/flags/it.png);}
     .es a {background-image:url(../images/flags/es.png);}
+    .sv a {background-image:url(../images/flags/sv.png);}
+    .et a {background-image:url(../images/flags/et.png);}
     
   }
 

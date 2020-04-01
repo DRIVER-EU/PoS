@@ -21,39 +21,85 @@ ul.links-translations li {
 ul.links-translations li a,
 ul.links-translations li span {
   margin-left: 3px;
+  &:before {
+   
+  }
 }
+ul.links-translations .messages > span {
+  &:before {
+    width:21px;
+    height:14px;
+    display:inline-block;
+    content:"";
+    margin-right:3px;
+    background:url(../images/flags/en.png) no-repeat;
+    background-size:cover;
+  }
+  &.pl:before {
+    background-image:url(../images/flags/pl.png);
+  }
+  &.de:before {
+    background-image:url(../images/flags/de.png);
+  }
+  &.nl:before {
+    background-image:url(../images/flags/nl.png);
+  }
+  &.fr:before {
+    background-image:url(../images/flags/fr.png);
+  }
+  &.es:before {
+    background-image:url(../images/flags/es.png);
+  }
+  &.it:before {
+    background-image:url(../images/flags/it.png);
+  }
+  &.et:before {
+    background-image:url(../images/flags/et.png);
+  }
+  &.sv:before {
+    background-image:url(../images/flags/sv.png);
+  }
+  // background:red;
+}
+// ul.links-translations li.dropbutton-action {
+//   float: none;
+// }
 
-ul.links-translations li.dropbutton-action {
-  float: none;
-}
+// ul.links-translations span.pl:before {
+//   content: url(../images/flags/pl.png);
+// }
 
-ul.links-translations span.pl:before {
-  content: url(../images/flags/pl.png);
-}
+// ul.links-translations span.de:before {
+//   content: url(../images/flags/de.png);
+// }
 
-ul.links-translations span.de:before {
-  content: url(../images/flags/de.png);
-}
+// ul.links-translations span.nl:before {
+//   content: url(../images/flags/nl.png);
+// }
 
-ul.links-translations span.nl:before {
-  content: url(../images/flags/nl.png);
-}
+// ul.links-translations span.fr:before {
+//   content: url(../images/flags/fr.png);
+// }
 
-ul.links-translations span.fr:before {
-  content: url(../images/flags/fr.png);
-}
+// ul.links-translations span.en:before {
+//   content: url(../images/flags/en.png);
+// }
 
-ul.links-translations span.en:before {
-  content: url(../images/flags/en.png);
-}
+// ul.links-translations span.it:before {
+//   content: url(../images/flags/it.png);
+// }
 
-ul.links-translations span.it:before {
-  content: url(../images/flags/it.png);
-}
+// ul.links-translations span.es:before {
+//   content: url(../images/flags/es.png);
+// }
 
-ul.links-translations span.es:before {
-  content: url(../images/flags/es.png);
-}
+// ul.links-translations span.sv:before {
+//   content: url(../images/flags/sv.png);
+// }
+
+// ul.links-translations span.et:before {
+//   content: url(../images/flags/et.png);
+// }
 
 .messages-language-flags {
     padding: 15px 5px 5px 25px;

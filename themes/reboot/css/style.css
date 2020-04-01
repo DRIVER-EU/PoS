@@ -1568,33 +1568,42 @@ body.path-frontpage main .view {
   background: url(../images/flags/en.png);
   background-repeat: no-repeat;
   background-position: left center;
+  background-size: 24px;
   color: #464646;
   font-size: .8125em;
   text-transform: uppercase;
 }
-/* line 24, ../sass/navigation/_navigation-lang.scss */
+/* line 25, ../sass/navigation/_navigation-lang.scss */
 #block-languageswitcher .links .de a {
   background-image: url(../images/flags/de.png);
 }
-/* line 25, ../sass/navigation/_navigation-lang.scss */
+/* line 26, ../sass/navigation/_navigation-lang.scss */
 #block-languageswitcher .links .fr a {
   background-image: url(../images/flags/fr.png);
 }
-/* line 26, ../sass/navigation/_navigation-lang.scss */
+/* line 27, ../sass/navigation/_navigation-lang.scss */
 #block-languageswitcher .links .nl a {
   background-image: url(../images/flags/nl.png);
 }
-/* line 27, ../sass/navigation/_navigation-lang.scss */
+/* line 28, ../sass/navigation/_navigation-lang.scss */
 #block-languageswitcher .links .pl a {
   background-image: url(../images/flags/pl.png);
 }
-/* line 28, ../sass/navigation/_navigation-lang.scss */
+/* line 29, ../sass/navigation/_navigation-lang.scss */
 #block-languageswitcher .links .it a {
   background-image: url(../images/flags/it.png);
 }
-/* line 29, ../sass/navigation/_navigation-lang.scss */
+/* line 30, ../sass/navigation/_navigation-lang.scss */
 #block-languageswitcher .links .es a {
   background-image: url(../images/flags/es.png);
+}
+/* line 31, ../sass/navigation/_navigation-lang.scss */
+#block-languageswitcher .links .sv a {
+  background-image: url(../images/flags/sv.png);
+}
+/* line 32, ../sass/navigation/_navigation-lang.scss */
+#block-languageswitcher .links .et a {
+  background-image: url(../images/flags/et.png);
 }
 @media (min-width: 992px) {
   /* line 1, ../sass/navigation/_navigation-lang.scss */
@@ -3952,53 +3961,56 @@ ul.links-translations li span {
   margin-left: 3px;
 }
 
-/* line 26, ../sass/components/_languages-navigation.scss */
-ul.links-translations li.dropbutton-action {
-  float: none;
+/* line 29, ../sass/components/_languages-navigation.scss */
+ul.links-translations .messages > span:before {
+  width: 21px;
+  height: 14px;
+  display: inline-block;
+  content: "";
+  margin-right: 3px;
+  background: url(../images/flags/en.png) no-repeat;
+  background-size: cover;
 }
-
-/* line 30, ../sass/components/_languages-navigation.scss */
-ul.links-translations span.pl:before {
-  content: url(../images/flags/pl.png);
-}
-
-/* line 34, ../sass/components/_languages-navigation.scss */
-ul.links-translations span.de:before {
-  content: url(../images/flags/de.png);
-}
-
 /* line 38, ../sass/components/_languages-navigation.scss */
-ul.links-translations span.nl:before {
-  content: url(../images/flags/nl.png);
+ul.links-translations .messages > span.pl:before {
+  background-image: url(../images/flags/pl.png);
 }
-
-/* line 42, ../sass/components/_languages-navigation.scss */
-ul.links-translations span.fr:before {
-  content: url(../images/flags/fr.png);
+/* line 41, ../sass/components/_languages-navigation.scss */
+ul.links-translations .messages > span.de:before {
+  background-image: url(../images/flags/de.png);
 }
-
-/* line 46, ../sass/components/_languages-navigation.scss */
-ul.links-translations span.en:before {
-  content: url(../images/flags/en.png);
+/* line 44, ../sass/components/_languages-navigation.scss */
+ul.links-translations .messages > span.nl:before {
+  background-image: url(../images/flags/nl.png);
 }
-
+/* line 47, ../sass/components/_languages-navigation.scss */
+ul.links-translations .messages > span.fr:before {
+  background-image: url(../images/flags/fr.png);
+}
 /* line 50, ../sass/components/_languages-navigation.scss */
-ul.links-translations span.it:before {
-  content: url(../images/flags/it.png);
+ul.links-translations .messages > span.es:before {
+  background-image: url(../images/flags/es.png);
+}
+/* line 53, ../sass/components/_languages-navigation.scss */
+ul.links-translations .messages > span.it:before {
+  background-image: url(../images/flags/it.png);
+}
+/* line 56, ../sass/components/_languages-navigation.scss */
+ul.links-translations .messages > span.et:before {
+  background-image: url(../images/flags/et.png);
+}
+/* line 59, ../sass/components/_languages-navigation.scss */
+ul.links-translations .messages > span.sv:before {
+  background-image: url(../images/flags/sv.png);
 }
 
-/* line 54, ../sass/components/_languages-navigation.scss */
-ul.links-translations span.es:before {
-  content: url(../images/flags/es.png);
-}
-
-/* line 58, ../sass/components/_languages-navigation.scss */
+/* line 104, ../sass/components/_languages-navigation.scss */
 .messages-language-flags {
   padding: 15px 5px 5px 25px;
   margin-left: 10px;
 }
 
-/* line 67, ../sass/components/_languages-navigation.scss */
+/* line 113, ../sass/components/_languages-navigation.scss */
 .ui-dialog-content .diff-header,
 .displayDifferences .dialog-off-canvas-main-canvas #block-reboot-content .diff-header,
 .ui-dialog-content .diff-controls,
@@ -4006,19 +4018,19 @@ ul.links-translations span.es:before {
   display: none;
 }
 
-/* line 72, ../sass/components/_languages-navigation.scss */
+/* line 118, ../sass/components/_languages-navigation.scss */
 .dialog-off-canvas-main-canvas .ajax-links-api-content .diff-header,
 .dialog-off-canvas-main-canvas .ajax-links-api-content .diff-controls {
   display: none;
 }
 
-/* line 76, ../sass/components/_languages-navigation.scss */
+/* line 122, ../sass/components/_languages-navigation.scss */
 .dialog-off-canvas-main-canvas .ajax-links-api-content .diff-responsive-table-wrapper {
   border: 1px solid #333333;
   background: #ffffff;
 }
 
-/* line 81, ../sass/components/_languages-navigation.scss */
+/* line 127, ../sass/components/_languages-navigation.scss */
 .ui-dialog-content #btndifferences {
   text-decoration: none;
   border: 1px solid #333333;
@@ -4029,39 +4041,39 @@ ul.links-translations span.es:before {
   color: #ffffff;
 }
 
-/* line 91, ../sass/components/_languages-navigation.scss */
+/* line 137, ../sass/components/_languages-navigation.scss */
 .displayDifferences .dialog-off-canvas-main-canvas #block-reboot-content .diff-responsive-table-wrapper {
   border: 1px solid #333333;
   background: #ffffff;
 }
 
-/* line 96, ../sass/components/_languages-navigation.scss */
+/* line 142, ../sass/components/_languages-navigation.scss */
 .displayDifferences .dialog-off-canvas-main-canvas #block-reboot-content .diff-responsive-table-wrapper .contextual-region {
   padding: 7px;
 }
 
-/* line 102, ../sass/components/_languages-navigation.scss */
+/* line 148, ../sass/components/_languages-navigation.scss */
 .displayDifferences .dialog-off-canvas-main-canvas #block-reboot-content .diff-responsive-table-wrapper *:not(ins),
 .displayDifferences .dialog-off-canvas-main-canvas #block-reboot-content .diff-responsive-table-wrapper *:not(del) {
   background: #ffffff;
 }
 
-/* line 106, ../sass/components/_languages-navigation.scss */
+/* line 152, ../sass/components/_languages-navigation.scss */
 .displayDifferences .dialog-off-canvas-main-canvas #block-reboot-content .diff-responsive-table-wrapper ins {
   background-color: #cfc;
 }
 
-/* line 110, ../sass/components/_languages-navigation.scss */
+/* line 156, ../sass/components/_languages-navigation.scss */
 .displayDifferences .dialog-off-canvas-main-canvas #block-reboot-content .diff-responsive-table-wrapper del {
   background-color: #fcc;
 }
 
-/* line 114, ../sass/components/_languages-navigation.scss */
+/* line 160, ../sass/components/_languages-navigation.scss */
 #drupal-off-canvas #displayDifferences * {
   color: #000000;
 }
 
-/* line 121, ../sass/components/_languages-navigation.scss */
+/* line 167, ../sass/components/_languages-navigation.scss */
 .ui-dialog-content #btnshowdifferences,
 #btnshowdifferences,
 .ui-dialog-content #btnhidedifferences,
@@ -4075,25 +4087,25 @@ ul.links-translations span.es:before {
   color: #ffffff;
 }
 
-/* line 131, ../sass/components/_languages-navigation.scss */
+/* line 177, ../sass/components/_languages-navigation.scss */
 .ui-dialog-content .vertical-tabs {
   margin: 1em 1em 1em 1em;
   border: 1px solid #ccc;
 }
 
-/* line 136, ../sass/components/_languages-navigation.scss */
+/* line 182, ../sass/components/_languages-navigation.scss */
 .ui-dialog-content .vertical-tabs__panes {
   margin: 0em 1em 1em 15em;
   border: 1px solid #ccc;
 }
 
-/* line 141, ../sass/components/_languages-navigation.scss */
+/* line 187, ../sass/components/_languages-navigation.scss */
 #drupal-off-canvas details.vertical-tabs__pane {
   margin: 0 5px;
   border-width: 0;
 }
 
-/* line 147, ../sass/components/_languages-navigation.scss */
+/* line 193, ../sass/components/_languages-navigation.scss */
 #drupal-off-canvas .vertical-tabs__menu-item a {
   display: block;
   padding: 10px 15px 15px;
@@ -4103,19 +4115,19 @@ ul.links-translations span.es:before {
   text-shadow: 0 1px rgba(255, 255, 255, 0.6);
 }
 
-/* line 156, ../sass/components/_languages-navigation.scss */
+/* line 202, ../sass/components/_languages-navigation.scss */
 #drupal-off-canvas .vertical-tabs__menu-item.is-selected a, #drupal-off-canvas .vertical-tabs__menu-item a:hover, #drupal-off-canvas .vertical-tabs__menu-item a:focus {
   background: #fcfcfa;
   text-shadow: none;
 }
 
-/* line 161, ../sass/components/_languages-navigation.scss */
+/* line 207, ../sass/components/_languages-navigation.scss */
 #drupal-off-canvas .vertical-tabs__menu-item a strong {
   color: #004f80;
   background-color: #f2f2f0;
 }
 
-/* line 166, ../sass/components/_languages-navigation.scss */
+/* line 212, ../sass/components/_languages-navigation.scss */
 #drupal-off-canvas .vertical-tabs__menu-item.is-selected a strong, #drupal-off-canvas .vertical-tabs__menu-item a:hover strong, #drupal-off-canvas .vertical-tabs__menu-item a:focus strong {
   color: #004f80;
   background: #fcfcfa;
