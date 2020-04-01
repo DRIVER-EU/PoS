@@ -2358,15 +2358,20 @@ function pos_group_notifications_send_emails_expiring_items() {
 		$expirationDate = clone $now;
 		$expirationDateEnd = clone $now;
 		
+		$nowInTimeStamp = strtotime($now);
+		
 		$expirationDate = $expirationDate->modify('-'.$pos_group_notifications_expiration_months. 'month');	
 		
 		$monthToSubstract = $pos_group_notifications_expiration_months - ($pos_group_notifications_expiration_end_months - $pos_group_notifications_expiration_months);
+		//$monthToSubstract = $pos_group_notifications_expiration_end_months;
 		
 		$expirationDateEnd = $expirationDateEnd->modify('-'.$monthToSubstract. 'month');
 		
 		//drupal_set_message("now:".$now, 'error');
 		//drupal_set_message("expirationDate:".$expirationDate, 'error');
 		//drupal_set_message("expirationDateEnd:".$expirationDateEnd, 'error');
+		//drupal_set_message("nowInTimeStamp:".$nowInTimeStamp, 'error');
+		
 		
 		//drupal_set_message("now -".$pos_group_notifications_expiration_months." months:".$expirationDate);		
 		//drupal_set_message("DATETIME_DATETIME_STORAGE_FORMAT:".DATETIME_DATETIME_STORAGE_FORMAT);
@@ -2389,10 +2394,10 @@ function pos_group_notifications_send_emails_expiring_items() {
 				$query->condition('status', 1);
 				$query->condition('type', $ct_k);
 				//$query->condition('changed', $expirationDate->format(DATETIME_DATETIME_STORAGE_FORMAT), '<=');
-				//$query->condition('changed', $expirationDate->getTimestamp(), '<=');				
+				$query->condition('changed', $expirationDate->getTimestamp(), '<=');				
 				//$query->condition('changed', $expirationDateEnd->getTimestamp(), '>');
 				
-				$query->condition('changed', array($expirationDate->getTimestamp(),$expirationDateEnd->getTimestamp()), 'BETWEEN');
+				//$query->condition('changed', array($expirationDate->getTimestamp(),$expirationDateEnd->getTimestamp()), 'BETWEEN');
 				$query->sort('changed', 'ASC');				
 				
 				
@@ -2402,33 +2407,46 @@ function pos_group_notifications_send_emails_expiring_items() {
 				
 				foreach ($nodes as $n_k=>$n_v) {
 					$cntNodes = $cntNodes +1;
-					//drupal_set_message($cntNodes."-***ct----".rand(1, 150)."n_k:".$n_k."--title:".$n_v->get('title')->value."---last update date:".$n_v->getChangedTime()."---uid:".$n_v->get('uid')->target_id, 'error');
+					$nchangedDate = $n_v->getChangedTime();
 					
-					$account = \Drupal\user\Entity\User::load($n_v->get('uid')->target_id); // pass your uid
-     				$userName = $account->getUsername();
-					$realname = $account->get('field_real_name')->value;
-					$userMail = $account->get('mail')->value; 
+					$expirationDateEndCalculated = "";
+					//$expirationDateEndCalculated = strtotime('+1 months', $gchangedDate);
+					$expirationDateEndCalculated = strtotime('+'.$pos_group_notifications_expiration_end_months.' months', $nchangedDate);
 					
-					//drupal_set_message("***----".rand(1, 150)."n_k:".$n_k."--title:".$n_v->get('title')->value."---last update date:".$n_v->getChangedTime()."---uid:".$n_v->get('uid')->target_id."--userName:".$userName."---userMail:".$userMail."---realname:".$realname, 'error');
+					//$expirationDateEndCalculated = $changedDate->modify('+'.$pos_group_notifications_expiration_end_months. 'month');
 					
-					$url_item = '<a href="'.$host.'/node/'.$n_k.'">'.$n_v->get('title')->value.'</a>';
-					
-					$body_email = $pos_group_notifications_expiration_body;
-			
-					$body_email = str_replace("[user:display-name]", $realname, $body_email);
-					$body_email = str_replace("[site:name]", $site_name, $body_email);
-					
-					$body_email = str_replace("[item:url]", $url_item, $body_email);
-					
-					$body_email = str_replace("[period:start]", $pos_group_notifications_expiration_months." ".$extraPeriodStartLabel, $body_email);
-					$body_email = str_replace("[period:end]", $pos_group_notifications_expiration_end_months." ".$extraPeriodEndLabel, $body_email);
-
-					
-					$body_email  = html_entity_decode( $body_email);
-					$body_email = render($body_email);			
+					//if (1==1) {
+					if ($nowInTimeStamp<=$expirationDateEndCalculated) {
+						
+						//drupal_set_message($cntNodes."-***ct----".rand(1, 150)."n_k:".$n_k."--title:".$n_v->get('title')->value."---last update date:".$n_v->getChangedTime()."---nowInTimeStamp:".$nowInTimeStamp."-----expirationDateEndCalculated:".$expirationDateEndCalculated."----uid:".$n_v->get('uid')->target_id, 'error');
+						
+						
+						$account = \Drupal\user\Entity\User::load($n_v->get('uid')->target_id); // pass your uid
+	     				$userName = $account->getUsername();
+						$realname = $account->get('field_real_name')->value;
+						$userMail = $account->get('mail')->value; 
+						
+						//drupal_set_message("***----".rand(1, 150)."n_k:".$n_k."--title:".$n_v->get('title')->value."---last update date:".$n_v->getChangedTime()."---uid:".$n_v->get('uid')->target_id."--userName:".$userName."---userMail:".$userMail."---realname:".$realname, 'error');
+						
+						$url_item = '<a href="'.$host.'/node/'.$n_k.'">'.$n_v->get('title')->value.'</a>';
+						
+						$body_email = $pos_group_notifications_expiration_body;
 				
-					//drupal_set_message("***".rand(1, 150)."----------->Before pos_send_custom_email<-------", 'error');
-					pos_send_custom_email($userMail, $subject_email, $body_email, $key);
+						$body_email = str_replace("[user:display-name]", $realname, $body_email);
+						$body_email = str_replace("[site:name]", $site_name, $body_email);
+						
+						$body_email = str_replace("[item:url]", $url_item, $body_email);
+						
+						$body_email = str_replace("[period:start]", $pos_group_notifications_expiration_months." ".$extraPeriodStartLabel, $body_email);
+						$body_email = str_replace("[period:end]", $pos_group_notifications_expiration_end_months." ".$extraPeriodEndLabel, $body_email);
+	
+						
+						$body_email  = html_entity_decode( $body_email);
+						$body_email = render($body_email);			
+					
+						//drupal_set_message("***".rand(1, 150)."----------->Before pos_send_custom_email<-------", 'error');
+						pos_send_custom_email($userMail, $subject_email, $body_email, $key);
+					}
 				
 				}
 				
@@ -2447,9 +2465,9 @@ function pos_group_notifications_send_emails_expiring_items() {
 				$queryG = \Drupal::entityQuery('group');
 				//$queryG->condition('status', 1);
 				$queryG->condition('type', $g_k);
-				//$queryG->condition('changed', $expirationDate->getTimestamp(), '<=');
+				$queryG->condition('changed', $expirationDate->getTimestamp(), '<=');
 				//$queryG->condition('changed', $expirationDateEnd->getTimestamp(), '>');
-				$queryG->condition('changed', array($expirationDate->getTimestamp(),$expirationDateEnd->getTimestamp()), 'BETWEEN');
+				//$queryG->condition('changed', array($expirationDate->getTimestamp(),$expirationDateEnd->getTimestamp()), 'BETWEEN');
 				$queryG->sort('changed', 'ASC');	
 				
 				$entity_ids = $queryG->execute();
@@ -2462,35 +2480,47 @@ function pos_group_notifications_send_emails_expiring_items() {
 					$gid = $group->id[0]->value;
 					$glabel = $group->label[0]->value;
 					$gauthor = $group->uid[0]->target_id;
+					$gchangedDate = $group->get('changed')->value;
 					
 					$account = \Drupal\user\Entity\User::load($gauthor); // pass your uid
      				$userName = $account->getUsername();
 					$realname = $account->get('field_real_name')->value;
 					$userMail = $account->get('mail')->value; 
 					
-					//drupal_set_message($cntGroups."-***----".rand(1, 150)."gid:".$gid."--title:".$glabel."------uid:".$gauthor."--userName:".$userName."---userMail:".$userMail."---realname:".$realname, 'error');
 					
-					$url_item = '<a href="'.$host.'/group/'.$gid.'">'.$glabel.'</a>';
+					$expirationDateEndCalculated = "";
+					//$expirationDateEndCalculated = strtotime('+1 months', $gchangedDate);
+					$expirationDateEndCalculated = strtotime('+'.$pos_group_notifications_expiration_end_months.' months', $gchangedDate);
 					
-					$body_email = $pos_group_notifications_expiration_body;
-			
-					$body_email = str_replace("[user:display-name]", $realname, $body_email);
-					$body_email = str_replace("[site:name]", $site_name, $body_email);
+					//$expirationDateEndCalculated = $changedDate->modify('+'.$pos_group_notifications_expiration_end_months. 'month');
 					
-					$body_email = str_replace("[item:url]", $url_item, $body_email);
-
-					$body_email = str_replace("[period:start]", $pos_group_notifications_expiration_months." ".$extraPeriodStartLabel, $body_email);
-					$body_email = str_replace("[period:end]", $pos_group_notifications_expiration_end_months." ".$extraPeriodEndLabel, $body_email);
-					
-					
-					$body_email  = html_entity_decode( $body_email);
-					$body_email = render($body_email);			
+					//if (1==1) {
+					if ($nowInTimeStamp<=$expirationDateEndCalculated) {
+						//drupal_set_message($cntGroups."-***----".rand(1, 150)."--gid:".$gid."--title:".$glabel."------gchangedDate:".$gchangedDate."---nowInTimeStamp:".$nowInTimeStamp."-----expirationDateEndCalculated:".$expirationDateEndCalculated."----uid:".$gauthor."--userName:".$userName."---userMail:".$userMail."---realname:".$realname, 'error');
+						
+						$url_item = '<a href="'.$host.'/group/'.$gid.'">'.$glabel.'</a>';
+						
+						$body_email = $pos_group_notifications_expiration_body;
 				
-					//drupal_set_message("***".rand(1, 150)."----------->Before pos_send_custom_email<-------", 'error');
-					pos_send_custom_email($userMail, $subject_email, $body_email, $key);
-
+						$body_email = str_replace("[user:display-name]", $realname, $body_email);
+						$body_email = str_replace("[site:name]", $site_name, $body_email);
+						
+						$body_email = str_replace("[item:url]", $url_item, $body_email);
+	
+						$body_email = str_replace("[period:start]", $pos_group_notifications_expiration_months." ".$extraPeriodStartLabel, $body_email);
+						$body_email = str_replace("[period:end]", $pos_group_notifications_expiration_end_months." ".$extraPeriodEndLabel, $body_email);
+						
+						
+						$body_email  = html_entity_decode( $body_email);
+						$body_email = render($body_email);			
 					
-					//drupal_set_message("***----".rand(1, 150)."gid:".$gid."--glabel:".$glabel."---gauthor:".$gauthor."<----", 'error');
+						//drupal_set_message("***".rand(1, 150)."----------->Before pos_send_custom_email<-------", 'error');
+						pos_send_custom_email($userMail, $subject_email, $body_email, $key);
+	
+						
+						//drupal_set_message("***----".rand(1, 150)."gid:".$gid."--glabel:".$glabel."---gauthor:".$gauthor."<----", 'error');	
+					}
+					
 				}
 				
 				
