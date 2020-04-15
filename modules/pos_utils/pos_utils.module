@@ -235,6 +235,11 @@ function pos_utils_views_pre_render(\Drupal\views\ViewExecutable $view) {
 				$checkUpdateItem = $node->access('update', $user);
 				//drupal_set_message("---check=".gettype($checkUpdateItem).'--'.(string) $checkUpdateItem);
 				
+				$displayFlags = false;
+				if ($checkUpdateItem) {
+					$displayFlags = true;
+				}
+				
 				$vids = \Drupal::entityManager()->getStorage('node')->revisionIds($node);
 				
 				$last_changed_translation_node = "";
@@ -256,8 +261,18 @@ function pos_utils_views_pre_render(\Drupal\views\ViewExecutable $view) {
 				//drupal_set_message("gid=".$gid."---");
 				$group = \Drupal\group\Entity\Group::load($gid);
 				
+				
 				$checkUpdateItem = $group->access('update', $user);
 				//drupal_set_message("---check=".gettype($checkUpdateItem).'--'.(string) $checkUpdateItem);
+				
+				
+				$displayFlags = false;
+				if ($group->getMember($user)) {
+  					$displayFlags = true;
+				}
+				else if ($checkUpdateItem) {
+					$displayFlags = true;
+				}
 				
 				$entity_type_id = 'group';	
 				
@@ -279,7 +294,7 @@ function pos_utils_views_pre_render(\Drupal\views\ViewExecutable $view) {
 			}						
 			$languageExtraString = "";
 			
-			if ($isTanslatable==1) {
+			if (($isTanslatable==1) && ($displayFlags)) {
 				$languageExtraString = '<div class="">';
 				$languageExtraString .= '<ul class="links-translations">';
 				foreach ($languages as $language) {
